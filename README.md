@@ -274,3 +274,5 @@ The output bundle will be generated in `dist/`.
 ---
 
 *PMGO Tactical Platform — Tactical Protocol Spectator Engine.*
+#   F a n t a s y  
+ 
