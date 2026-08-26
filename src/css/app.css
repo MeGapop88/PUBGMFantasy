@@ -1,0 +1,117 @@
+/* Component Styles for PMGO Tactical Protocol */
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0A0A0B;
+}
+::-webkit-scrollbar-thumb {
+  background: #2E2E32;
+  border-radius: 0px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #FF6B00;
+}
+
+/* Toast container */
+#toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 8px;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  min-width: 280px;
+  max-width: 420px;
+  background: #1A1A1C;
+  border: 1px solid #2E2E32;
+  color: #e5e2e3;
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+  animation: toast-slide 0.25s ease-out;
+}
+
+.toast.success {
+  border-left: 4px solid #4cff72;
+}
+
+.toast.error {
+  border-left: 4px solid #ff4c4c;
+}
+
+.toast.warning {
+  border-left: 4px solid #FF6B00;
+}
+
+@keyframes toast-slide {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Data Table Styling */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th {
+  font-family: 'Archivo Narrow', sans-serif;
+  font-[700];
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #a98a7d;
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid #2E2E32;
+  background-color: #131314;
+}
+
+.data-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(46, 46, 50, 0.5);
+  font-family: 'Geist', sans-serif;
+  font-size: 14px;
+}
+
+.data-table tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+.data-table tbody tr:hover {
+  background-color: #2a2a2b;
+}
+
+/* Team Logo Placeholders */
+.team-logo-badge {
+  width: 40px;
+  height: 40px;
+  border-radius: 9999px;
+  border: 2px solid #2E2E32;
+  background-color: #0A0A0B;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Archivo Narrow', sans-serif;
+  font-weight: 700;
+  color: #FF6B00;
+  flex-shrink: 0;
+}

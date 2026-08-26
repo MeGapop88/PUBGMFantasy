@@ -1,0 +1,169 @@
+<!doctype html>
+<html class="dark" lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="PUBG Mobile Global Open — Tactical Fantasy & Match Predictions Platform." />
+    <title>PMGO — Tactical Protocol</title>
+
+    <!-- Google Fonts: Archivo Narrow & Geist -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:ital,wght@0,600;0,700;1,700&family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    
+    <!-- Google Material Symbols Outlined -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              background: '#0A0A0B',
+              surface: '#131314',
+              'surface-dim': '#131314',
+              'surface-bright': '#3a393a',
+              'surface-container-lowest': '#0e0e0f',
+              'surface-container-low': '#1c1b1c',
+              'surface-container': '#1A1A1C',
+              'surface-container-high': '#2a2a2b',
+              'surface-container-highest': '#353436',
+              primary: '#FF6B00',
+              'primary-bright': '#FF6B00',
+              'primary-container': '#FF6B00',
+              'on-primary': '#000000',
+              'on-surface': '#e5e2e3',
+              'on-surface-variant': '#e2bfb0',
+              outline: '#a98a7d',
+              'outline-variant': '#2E2E32',
+              'status-live': '#FF0000',
+              'status-success': '#4cff72',
+            },
+            fontFamily: {
+              headline: ['Archivo Narrow', 'sans-serif'],
+              body: ['Geist', 'sans-serif'],
+              label: ['Geist', 'sans-serif'],
+              mono: ['Geist', 'monospace'],
+            },
+            borderRadius: {
+              DEFAULT: '0px',
+              none: '0px',
+              sm: '0px',
+              md: '0px',
+              lg: '0px',
+              xl: '0px',
+              full: '9999px',
+            }
+          }
+        }
+      }
+    </script>
+
+    <link rel="stylesheet" href="/src/css/design-system.css" />
+    <link rel="stylesheet" href="/src/css/app.css" />
+  </head>
+  <body class="bg-background text-on-surface min-h-screen flex flex-col antialiased selection:bg-primary selection:text-black">
+    <div id="app" class="flex flex-col min-h-screen relative z-10">
+      
+      <!-- Top Navigation Bar -->
+      <nav id="navbar" class="hidden sticky top-0 z-50 border-b border-outline-variant bg-[#0A0A0B]/90 backdrop-blur-md">
+        <div class="max-w-[1440px] mx-auto px-4 md:px-10 h-[64px] flex items-center justify-between">
+          <div class="flex items-center gap-8">
+            <a href="#/dashboard" class="flex items-center gap-2 group">
+              <span class="text-primary font-bold text-2xl tracking-tighter">◈ PMGO</span>
+              <span class="bg-primary/10 border border-primary/40 text-primary font-headline font-bold text-[11px] px-2 py-0.5 uppercase tracking-wider">TACTICAL</span>
+            </a>
+            <div class="hidden lg:flex items-center gap-6" id="navbar-links">
+              <a href="#/dashboard" class="nav-link font-headline font-bold text-sm tracking-wider uppercase transition-colors" data-page="dashboard">TOURNAMENT</a>
+              <a href="#/predictions" class="nav-link font-headline font-bold text-sm tracking-wider uppercase transition-colors" data-page="predictions">PREDICTIONS</a>
+              <a href="#/fantasy" class="nav-link font-headline font-bold text-sm tracking-wider uppercase transition-colors" data-page="fantasy">MY SQUAD</a>
+              <a href="#/leaderboard" class="nav-link font-headline font-bold text-sm tracking-wider uppercase transition-colors" data-page="leaderboard">LEADERBOARD</a>
+              <a href="#/players" class="nav-link font-headline font-bold text-sm tracking-wider uppercase transition-colors" data-page="players">ROSTER</a>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-4">
+            <div class="hidden md:flex items-center gap-3 pr-4 border-r border-outline-variant">
+              <span class="material-symbols-outlined text-outline hover:text-primary cursor-pointer transition-colors">search</span>
+              <span class="material-symbols-outlined text-outline hover:text-primary cursor-pointer transition-colors relative">
+                notifications
+                <span class="absolute top-0 right-0 w-2 h-2 bg-primary rounded-full"></span>
+              </span>
+            </div>
+            
+            <div class="flex items-center gap-3" id="navbar-user">
+              <div class="flex items-center gap-2 bg-surface-container px-3 py-1.5 border border-outline-variant">
+                <span class="w-2 h-2 bg-status-success rounded-full animate-pulse"></span>
+                <span class="font-headline font-bold text-sm tracking-wide text-primary" id="user-display">USER</span>
+              </div>
+              <button id="logout-btn" class="btn-secondary font-headline text-xs px-3 py-1.5 uppercase font-bold tracking-wider hover:bg-primary hover:text-black transition-all">LOGOUT</button>
+            </div>
+
+            <button class="lg:hidden text-on-surface p-2" id="nav-hamburger" aria-label="Open menu">
+              <span class="material-symbols-outlined">menu</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Mobile Drawer -->
+        <div class="lg:hidden hidden border-t border-outline-variant bg-[#131314] px-6 py-4 flex flex-col gap-3" id="nav-mobile-menu">
+          <a href="#/dashboard" class="nav-mobile-link font-headline font-bold text-base tracking-wider uppercase py-2 border-b border-outline-variant/40" data-page="dashboard">TOURNAMENT</a>
+          <a href="#/predictions" class="nav-mobile-link font-headline font-bold text-base tracking-wider uppercase py-2 border-b border-outline-variant/40" data-page="predictions">PREDICTIONS</a>
+          <a href="#/fantasy" class="nav-mobile-link font-headline font-bold text-base tracking-wider uppercase py-2 border-b border-outline-variant/40" data-page="fantasy">MY SQUAD</a>
+          <a href="#/leaderboard" class="nav-mobile-link font-headline font-bold text-base tracking-wider uppercase py-2 border-b border-outline-variant/40" data-page="leaderboard">LEADERBOARD</a>
+          <a href="#/players" class="nav-mobile-link font-headline font-bold text-base tracking-wider uppercase py-2" data-page="players">ROSTER</a>
+        </div>
+      </nav>
+
+      <!-- Main Layout with Sidebar on Desktop -->
+      <div id="main-layout" class="flex flex-1 w-full max-w-[1440px] mx-auto">
+        <!-- Sidebar Navigation (Desktop) -->
+        <aside id="sidebar" class="hidden lg:flex flex-col w-64 border-r border-outline-variant bg-[#131314] sticky top-[64px] h-[calc(100vh-64px)] z-40 shrink-0">
+          <div class="p-5 border-b border-outline-variant flex items-center gap-3 bg-[#1A1A1C]">
+            <div class="w-10 h-10 border border-primary/50 bg-surface-container-highest flex items-center justify-center font-headline font-bold text-primary text-lg">
+              <span class="material-symbols-outlined text-primary">military_tech</span>
+            </div>
+            <div>
+              <div class="font-headline font-bold text-primary text-base leading-tight uppercase tracking-wider" id="sidebar-user-name">OPERATIVE</div>
+              <div class="font-label text-xs text-outline tracking-wider uppercase">RANK: DIVISION I</div>
+            </div>
+          </div>
+
+          <nav class="flex-1 py-4 flex flex-col gap-1">
+            <a href="#/dashboard" class="sidebar-link px-5 py-3 font-headline font-bold text-sm tracking-wider uppercase flex items-center gap-3 text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors" data-page="dashboard">
+              <span class="material-symbols-outlined text-xl">dashboard</span> TOURNAMENT
+            </a>
+            <a href="#/predictions" class="sidebar-link px-5 py-3 font-headline font-bold text-sm tracking-wider uppercase flex items-center gap-3 text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors" data-page="predictions">
+              <span class="material-symbols-outlined text-xl">target</span> PREDICTIONS
+            </a>
+            <a href="#/fantasy" class="sidebar-link px-5 py-3 font-headline font-bold text-sm tracking-wider uppercase flex items-center gap-3 text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors" data-page="fantasy">
+              <span class="material-symbols-outlined text-xl">groups</span> FANTASY SQUAD
+            </a>
+            <a href="#/leaderboard" class="sidebar-link px-5 py-3 font-headline font-bold text-sm tracking-wider uppercase flex items-center gap-3 text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors" data-page="leaderboard">
+              <span class="material-symbols-outlined text-xl">leaderboard</span> LEADERBOARD
+            </a>
+            <a href="#/players" class="sidebar-link px-5 py-3 font-headline font-bold text-sm tracking-wider uppercase flex items-center gap-3 text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors" data-page="players">
+              <span class="material-symbols-outlined text-xl">badge</span> PLAYER ROSTER
+            </a>
+          </nav>
+
+          <div class="p-4 border-t border-outline-variant bg-[#0E0E0F]">
+            <div class="p-3 border border-primary/30 bg-primary/5 text-center">
+              <div class="font-headline font-bold text-xs text-primary uppercase tracking-widest mb-1">PMGO GLOBAL FINALS</div>
+              <div class="font-label text-[11px] text-outline">36 Matches Ingested</div>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main id="page-container" class="flex-1 w-full min-w-0 p-4 md:p-8"></main>
+      </div>
+
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
