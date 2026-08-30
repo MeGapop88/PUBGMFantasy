@@ -1,5 +1,5 @@
 /**
- * UI HELPERS — Toast notifications, page renderer, nav active state
+ * UI HELPERS — Toast notifications, page renderer, nav active state, formatters
  */
 
 let toastContainer;
@@ -40,25 +40,25 @@ export function showPageLoader(message = 'LOADING TELEMETRY...') {
 }
 
 export function setActiveNav(page) {
-  // Top nav links
-  document.querySelectorAll('.nav-link, .nav-mobile-link').forEach(link => {
+  // Top navigation links
+  document.querySelectorAll('.nav-link').forEach(link => {
     if (link.dataset.page === page) {
-      link.classList.add('active', 'text-primary');
-      link.classList.remove('text-on-surface-variant');
+      link.classList.add('text-primary', 'border-b-2', 'border-primary', 'bg-primary/5');
+      link.classList.remove('text-outline');
     } else {
-      link.classList.remove('active', 'text-primary');
-      link.classList.add('text-on-surface-variant');
+      link.classList.remove('text-primary', 'border-b-2', 'border-primary', 'bg-primary/5');
+      link.classList.add('text-outline');
     }
   });
 
-  // Sidebar links
-  document.querySelectorAll('.sidebar-link').forEach(link => {
+  // Mobile drawer links
+  document.querySelectorAll('.nav-mobile-link').forEach(link => {
     if (link.dataset.page === page) {
-      link.classList.add('active', 'text-primary', 'bg-primary/10', 'border-l-4', 'border-primary');
-      link.classList.remove('text-on-surface-variant');
+      link.classList.add('text-primary', 'bg-primary/10', 'border-l-4', 'border-primary');
+      link.classList.remove('text-outline');
     } else {
-      link.classList.remove('active', 'text-primary', 'bg-primary/10', 'border-l-4', 'border-primary');
-      link.classList.add('text-on-surface-variant');
+      link.classList.remove('text-primary', 'bg-primary/10', 'border-l-4', 'border-primary');
+      link.classList.add('text-outline');
     }
   });
 }
@@ -71,9 +71,14 @@ export function fmt(n, decimals = 0) {
   });
 }
 
-export function fmtMvp(n) {
+export function fmtPower(n) {
   if (n === null || n === undefined) return '—';
-  return (n * 100).toFixed(3) + '%';
+  return Math.round(Number(n)).toLocaleString('en-US') + ' PWR';
+}
+
+export function fmtPowerNumber(n) {
+  if (n === null || n === undefined) return '—';
+  return Math.round(Number(n)).toLocaleString('en-US');
 }
 
 export function fmtTime(seconds) {

@@ -1,22 +1,15 @@
 /**
- * DASHBOARD PAGE
- * Styled with Stitch "Tournament Dashboard (Desktop)" and merged with "Match Result Detail (Desktop)"
- * Team Logos Integrated from Official Registry
+ * DASHBOARD PAGE — TOURNAMENT COMMAND CENTER
+ * Displays Overall Finals Tournament Standings across all 18 Finals games in a clean 2-column (8 teams each) layout,
+ * Stage Hero Telemetry, and Match Grid that links directly to Match Result drilldown.
  */
-import { renderPage, setActiveNav, fmt, fmtMvp, placementColor, ordinal } from '../ui.js';
-import { getUserPredictions, getSession } from '../state.js';
+import { renderPage, setActiveNav, fmt, fmtPower, placementColor } from '../ui.js';
 import { renderTeamLogoBadge } from '../data/teamLogos.js';
-
-// Official PUBG Mobile Placement Points Lookup
-const OFFICIAL_PLACEMENT_PTS = {
-  1: 10, 2: 6, 3: 5, 4: 4, 5: 3, 6: 2, 7: 1, 8: 1,
-  9: 0, 10: 0, 11: 0, 12: 0, 13: 0, 14: 0, 15: 0, 16: 0
-};
 
 export function renderDashboard(store) {
   setActiveNav('dashboard');
 
-  const { matches, players, teams } = store;
+  const { matches, players, teams, finalsStandings } = store;
 
   if (!matches.length) {
     renderPage(`
@@ -37,33 +30,74 @@ export function renderDashboard(store) {
   const totalMatches = matches.length;
   const totalTeams   = Object.keys(teams).length;
 
-  const topMvpPlayer = Object.values(players)
+  const topPowerPlayer = Object.values(players)
     .filter(p => p.matchesPlayed >= 3)
-    .sort((a, b) => b.avgMvpRate - a.avgMvpRate)[0];
+    .sort((a, b) => b.avgPower - a.avgPower)[0];
 
   const phases = [...new Set(matches.map(m => m.phase))].sort();
-  let selectedPhase = phases[0];
-  
-  let selectedMatchId = matches[0].id;
+  let selectedPhase = 'Finals';
 
-  const predictions = getUserPredictions();
+  const standings = finalsStandings || [];
+  const col1Teams = standings.slice(0, 8);
+  const col2Teams = standings.slice(8, 16);
+
+  function renderStandingsColumn(teamList, colTitle) {
+    return `
+      <div class="flex flex-col gap-2.5 flex-1 min-w-[500px]">
+        
+        <!-- Table Header Row -->
+        <div class="grid grid-cols-[45px_1fr_60px_65px_75px_95px] gap-2 px-3.5 py-2.5 bg-[#0E0E0F] border border-outline-variant font-headline font-bold text-xs text-outline uppercase tracking-wider items-center">
+          <div class="text-center">RANK</div>
+          <div>TEAM</div>
+          <div class="text-right">WWCD</div>
+          <div class="text-right">KILLS</div>
+          <div class="text-right">PLACE</div>
+          <div class="text-right text-primary">TOTAL PTS</div>
+        </div>
+
+        <!-- Team Rows -->
+        <div class="flex flex-col gap-2">
+          ${teamList.map(t => {
+            const rank = t.tournamentRank;
+            const isTop3 = rank <= 3;
+            const glowStyles = {
+              1: 'border-primary shadow-[inset_0_0_10px_rgba(255,107,0,0.4)]',
+              2: 'border-[#2E2E32] shadow-[inset_0_0_10px_rgba(255,107,0,0.25)]',
+              3: 'border-[#2E2E32] shadow-[inset_0_0_10px_rgba(255,107,0,0.15)]',
+            };
+
+            return `
+              <div class="hud-card p-3 border grid grid-cols-[45px_1fr_60px_65px_75px_95px] gap-2 items-center bg-[#131314] ${isTop3 ? (glowStyles[rank] || 'border-outline-variant') : 'border-outline-variant opacity-90'} hover:border-primary transition-all">
+                <div class="font-headline font-bold text-base text-center" style="color:${placementColor(rank)}">
+                  #${rank}
+                </div>
+                
+                <div class="flex items-center gap-2.5 min-w-0">
+                  ${renderTeamLogoBadge(t.teamName, 'w-8 h-8', isTop3 ? 'border-2 border-primary' : 'border border-outline-variant')}
+                  <div class="min-w-0">
+                    <span class="font-headline font-bold text-sm text-white uppercase truncate block">${t.teamName}</span>
+                    <span class="font-label text-[9px] text-outline truncate block">${t.matchesPlayed}G · ${fmt(t.totalDamage)} DMG</span>
+                  </div>
+                </div>
+
+                <div class="font-headline font-bold text-white text-right text-sm flex items-center justify-end gap-0.5">
+                  ${t.wins > 0 ? `<span class="material-symbols-outlined text-[13px] text-status-success">emoji_events</span>` : ''}
+                  <span>${t.wins}</span>
+                </div>
+
+                <div class="font-headline font-bold text-white text-right text-sm">${t.totalKills}</div>
+                <div class="font-headline font-bold text-outline text-right text-xs">+${t.totalPlacePts}</div>
+                <div class="font-headline font-bold text-primary text-right text-lg">${t.totalPoints}</div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+
+      </div>
+    `;
+  }
 
   function renderContent() {
-    const activeMatch = matches.find(m => m.id === selectedMatchId) || matches[0];
-    const userPred = predictions[activeMatch.id];
-    
-    const teamsWithPoints = activeMatch.teams.map(t => {
-      const placePts = OFFICIAL_PLACEMENT_PTS[t.rank] ?? 0;
-      const killPts  = t.totalKills;
-      const totalMatchPts = placePts + killPts;
-      return {
-        ...t,
-        placePts,
-        killPts,
-        totalMatchPts,
-      };
-    }).sort((a, b) => b.totalMatchPts - a.totalMatchPts || a.rank - b.rank);
-
     renderPage(`
       <div class="flex flex-col gap-8 pb-12">
         
@@ -103,19 +137,20 @@ export function renderDashboard(store) {
                 <div class="font-headline font-bold text-white text-2xl tracking-tight">${totalTeams}</div>
               </div>
               <div class="hud-card bg-[#1A1A1C]/90 p-3 text-center border border-outline-variant min-w-[110px]">
-                <div class="font-label text-[10px] font-bold text-outline uppercase tracking-wider mb-1">KILLS</div>
+                <div class="font-label text-[10px] font-bold text-outline uppercase tracking-wider mb-1">TOTAL KILLS</div>
                 <div class="font-headline font-bold text-primary text-2xl tracking-tight">${fmt(totalKills)}</div>
               </div>
               <div class="hud-card bg-[#1A1A1C]/90 p-3 text-center border border-outline-variant min-w-[110px]">
-                <div class="font-label text-[10px] font-bold text-outline uppercase tracking-wider mb-1">TOP MVP</div>
-                <div class="font-headline font-bold text-white text-lg tracking-tight truncate max-w-[100px]">${topMvpPlayer ? topMvpPlayer.playerName : '—'}</div>
+                <div class="font-label text-[10px] font-bold text-outline uppercase tracking-wider mb-1">TOP OPERATIVE</div>
+                <div class="font-headline font-bold text-white text-lg tracking-tight truncate max-w-[100px]">${topPowerPlayer ? topPowerPlayer.playerName : '—'}</div>
+                <div class="font-label text-[9px] text-primary font-bold">${topPowerPlayer ? fmtPower(topPowerPlayer.avgPower) : ''}</div>
               </div>
             </div>
           </div>
         </div>
 
         <!-- ============================================================
-             STITCH SECTION: GAME TELEMETRY & MATCH LEADERBOARD
+             OVERALL TOURNAMENT STANDINGS (2 COLUMNS x 8 TEAMS)
              ============================================================ -->
         <section class="hud-card border border-outline-variant bg-[#1A1A1C] p-6 md:p-8 flex flex-col gap-6">
           
@@ -123,143 +158,37 @@ export function renderDashboard(store) {
           <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-outline-variant pb-4">
             <div>
               <p class="font-headline font-bold text-xs text-primary uppercase tracking-widest flex items-center gap-2 mb-1">
-                <span class="w-2 h-2 bg-status-live animate-pulse"></span> GAME TELEMETRY & MATCH LEADERBOARD
+                <span class="w-2 h-2 bg-status-live animate-pulse"></span> TOURNAMENT STANDINGS (ALL FINALS GAMES)
               </p>
               <h2 class="font-headline font-bold text-2xl md:text-3xl text-white uppercase tracking-tight">
-                ${activeMatch.phase} — DAY ${activeMatch.day} GAME ${activeMatch.game}
+                PMGO FINALS OVERALL LEADERBOARD
               </h2>
             </div>
-
-            <!-- Game Switcher Carousel Buttons -->
-            <div class="flex gap-2 overflow-x-auto max-w-full pb-1" id="game-detail-switcher">
-              ${matches.filter(m => selectedPhase === 'ALL' || m.phase === selectedPhase).slice(0, 12).map(m => {
-                const isSelected = m.id === activeMatch.id;
-                return `
-                  <button class="game-btn px-3 py-1.5 font-headline font-bold text-xs uppercase tracking-wider ${isSelected ? 'btn-primary' : 'hud-card text-outline hover:border-primary'}" data-id="${m.id}">
-                    D${m.day} G${m.game}
-                  </button>
-                `;
-              }).join('')}
+            
+            <div class="bg-[#0E0E0F] px-4 py-2 border border-outline-variant text-right">
+              <span class="font-label text-[10px] text-outline uppercase tracking-wider block">SCORING SYSTEM</span>
+              <span class="font-headline font-bold text-xs text-primary uppercase">1 KILL = 1 PT + OFFICIAL PLACEMENT PTS</span>
             </div>
           </div>
 
-          <!-- Main Grid: 8 cols Official Match Points Leaderboard + 4 cols Prediction Detail -->
-          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            
-            <!-- Left Column (8 Cols): Official Game Standings Leaderboard -->
-            <div class="lg:col-span-8 flex flex-col gap-3">
-              
-              <!-- Table Header -->
-              <div class="grid grid-cols-[50px_1fr_75px_85px_110px] gap-2 px-4 py-2 bg-[#0E0E0F] border-b border-outline-variant font-headline font-bold text-xs text-outline uppercase tracking-wider">
-                <div class="text-center">RANK</div>
-                <div>TEAM</div>
-                <div class="text-right">KILLS</div>
-                <div class="text-right">PLACE PTS</div>
-                <div class="text-right text-primary">MATCH PTS</div>
-              </div>
-
-              <!-- Team Placement Rows (With Team Logo Badges) -->
-              <div class="flex flex-col gap-2 max-h-[520px] overflow-y-auto pr-1">
-                ${teamsWithPoints.map((t, idx) => {
-                  const rank = t.rank;
-                  const isTop3 = rank <= 3;
-                  const glowStyles = {
-                    1: 'border-primary shadow-[inset_0_0_10px_rgba(255,107,0,0.4)]',
-                    2: 'border-[#2E2E32] shadow-[inset_0_0_10px_rgba(255,107,0,0.25)]',
-                    3: 'border-[#2E2E32] shadow-[inset_0_0_10px_rgba(255,107,0,0.15)]',
-                  };
-
-                  return `
-                    <div class="hud-card p-3 border grid grid-cols-[50px_1fr_75px_85px_110px] gap-2 items-center bg-[#131314] ${isTop3 ? (glowStyles[rank] || 'border-outline-variant') : 'border-outline-variant opacity-80'} hover:border-primary transition-all">
-                      <div class="font-headline font-bold text-lg text-center" style="color:${placementColor(rank)}">
-                        ${rank}
-                      </div>
-                      
-                      <div class="flex items-center gap-3 min-w-0">
-                        ${renderTeamLogoBadge(t.teamName, 'w-9 h-9', isTop3 ? 'border-2 border-primary' : 'border border-outline-variant')}
-                        <span class="font-headline font-bold text-base text-white uppercase truncate">${t.teamName}</span>
-                      </div>
-
-                      <div class="font-headline font-bold text-white text-right text-base">${t.killPts}</div>
-                      <div class="font-headline font-bold text-outline text-right text-sm">+${t.placePts}</div>
-                      <div class="font-headline font-bold text-primary text-right text-xl">${t.totalMatchPts} PTS</div>
-                    </div>
-                  `;
-                }).join('')}
-              </div>
-
-            </div>
-
-            <!-- Right Column (4 Cols): Prediction Payout & Reward Decay Widget -->
-            <div class="lg:col-span-4 hud-card border border-outline-variant bg-[#0E0E0F] p-5 flex flex-col gap-5">
-              
-              <div class="flex items-center justify-between border-b border-outline-variant pb-3">
-                <span class="font-headline font-bold text-xs text-primary uppercase tracking-widest flex items-center gap-1">
-                  <span class="material-symbols-outlined text-sm">troubleshoot</span> YOUR MATCH PREDICTION
-                </span>
-                <span class="font-label text-[10px] text-outline uppercase">${activeMatch.phase}</span>
-              </div>
-
-              ${userPred ? `
-                <div class="flex items-center gap-4 bg-[#1A1A1C] p-3.5 border border-outline-variant">
-                  ${renderTeamLogoBadge(userPred.predictedTeamName, 'w-12 h-12', 'border-2 border-primary')}
-                  <div>
-                    <div class="font-label text-[9px] text-outline uppercase">PICKED WINNER</div>
-                    <div class="font-headline font-bold text-xl text-white uppercase">${userPred.predictedTeamName}</div>
-                  </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                  <div class="hud-card p-3 text-center bg-[#1A1A1C]">
-                    <div class="font-label text-[9px] text-outline uppercase mb-1">ACTUAL FINISH</div>
-                    <div class="font-headline font-bold text-xl text-white" style="color:${placementColor(userPred.actualPlacement)}">${ordinal(userPred.actualPlacement)}</div>
-                  </div>
-                  <div class="hud-card p-3 text-center bg-[#1A1A1C]">
-                    <div class="font-label text-[9px] text-outline uppercase mb-1">POINTS EARNED</div>
-                    <div class="font-headline font-bold text-2xl text-primary">+${userPred.points ?? 0}</div>
-                  </div>
-                </div>
-              ` : `
-                <div class="p-4 border border-dashed border-outline-variant text-center bg-[#1A1A1C]">
-                  <div class="font-headline font-bold text-sm text-white uppercase mb-1">NO PREDICTION SUBMITTED</div>
-                  <div class="font-label text-xs text-outline mb-3">Lock in your team pick for next match</div>
-                  <a href="#/predictions" class="btn-primary inline-flex px-4 py-2 font-headline font-bold text-xs uppercase">MAKE PREDICTION</a>
-                </div>
-              `}
-
-              <!-- Point Decay Reward Bars -->
-              <div class="border-t border-outline-variant pt-4">
-                <div class="font-headline font-bold text-[11px] text-outline uppercase tracking-wider mb-3">REWARD DECAY CURVE (BASE 10 PTS)</div>
-                <div class="flex items-end gap-1.5 h-20 border-b border-outline-variant pb-1">
-                  <div class="flex-1 bg-primary/80 h-full relative" title="1st Place (10pt)"></div>
-                  <div class="flex-1 bg-primary/60 h-[80%]" title="2nd Place (8pt)"></div>
-                  <div class="flex-1 bg-primary/40 h-[50%]" title="3rd Place (5pt)"></div>
-                  <div class="flex-1 bg-primary/25 h-[30%]" title="4th Place (3pt)"></div>
-                  <div class="flex-1 bg-primary/10 h-[10%]" title="5th Place (1pt)"></div>
-                </div>
-                <div class="flex justify-between mt-1 font-label text-[9px] text-outline uppercase">
-                  <span>1ST (10)</span>
-                  <span>3RD (5)</span>
-                  <span>6TH+ (0)</span>
-                </div>
-              </div>
-
-              <a href="#/predictions" class="btn-primary w-full py-3 text-center font-headline font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2">
-                <span class="material-symbols-outlined text-base">target</span> PREDICT NEXT MATCH
-              </a>
-
-            </div>
-
+          <!-- Standings 2-Column Grid (8 Teams in Col 1 + 8 Teams in Col 2) -->
+          <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start overflow-x-auto">
+            ${renderStandingsColumn(col1Teams, 'TOP 8 CONTENDERS')}
+            ${renderStandingsColumn(col2Teams, 'RANKS 9 - 16')}
           </div>
 
         </section>
 
-        <!-- Match Cards Overview Grid -->
+        <!-- Match Grid Telemetry (Clicking a card opens the Match Result Detail page) -->
         <div class="flex flex-col gap-4">
           <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-outline-variant pb-4">
-            <h2 class="font-headline font-bold text-2xl text-white uppercase tracking-wider flex items-center gap-2">
-              <span class="material-symbols-outlined text-primary">apps</span> MATCH GRID TELEMETRY
-            </h2>
+            <div>
+              <h2 class="font-headline font-bold text-2xl text-white uppercase tracking-wider flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">apps</span> MATCH GRID TELEMETRY
+              </h2>
+              <p class="font-label text-xs text-outline mt-0.5">Click any match card to inspect the game results & player performance</p>
+            </div>
+
             <div class="flex gap-2" id="phase-tabs">
               ${phases.map(p => `
                 <button class="phase-btn px-4 py-1.5 font-headline font-bold text-xs uppercase tracking-wider ${p === selectedPhase ? 'btn-primary' : 'hud-card text-on-surface-variant hover:border-primary'}" data-phase="${p}">${p}</button>
@@ -269,7 +198,7 @@ export function renderDashboard(store) {
           </div>
 
           <div id="matches-content">
-            ${renderPhaseMatches(matches, selectedPhase, selectedMatchId)}
+            ${renderPhaseMatches(matches, selectedPhase)}
           </div>
         </div>
 
@@ -277,16 +206,6 @@ export function renderDashboard(store) {
     `);
 
     // Handlers
-    const gameDetailSwitcher = document.getElementById('game-detail-switcher');
-    if (gameDetailSwitcher) {
-      gameDetailSwitcher.onclick = e => {
-        const btn = e.target.closest('.game-btn');
-        if (!btn) return;
-        selectedMatchId = btn.dataset.id;
-        renderContent();
-      };
-    }
-
     const phaseTabs = document.getElementById('phase-tabs');
     if (phaseTabs) {
       phaseTabs.onclick = e => {
@@ -296,19 +215,12 @@ export function renderDashboard(store) {
         renderContent();
       };
     }
-
-    document.querySelectorAll('.match-select-card').forEach(card => {
-      card.onclick = () => {
-        selectedMatchId = card.dataset.id;
-        renderContent();
-      };
-    });
   }
 
   renderContent();
 }
 
-function renderPhaseMatches(matches, phase, activeMatchId) {
+function renderPhaseMatches(matches, phase) {
   const filtered = phase === 'ALL' ? matches : matches.filter(m => m.phase === phase);
   const days = [...new Set(filtered.map(m => m.day))].sort();
 
@@ -324,62 +236,64 @@ function renderPhaseMatches(matches, phase, activeMatchId) {
         </div>
         
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          ${dayMatches.map(m => renderMatchCard(m, m.id === activeMatchId)).join('')}
+          ${dayMatches.map(m => renderMatchCard(m)).join('')}
         </div>
       </div>
     `;
   }).join('');
 }
 
-function renderMatchCard(match, isSelected) {
+function renderMatchCard(match) {
   const winner = match.winner;
   const topKiller = match.topKiller;
 
   return `
-    <div class="match-select-card hud-card p-5 border transition-all cursor-pointer group relative overflow-hidden ${isSelected ? 'border-primary bg-primary/10 shadow-[0_0_15px_rgba(255,107,0,0.2)]' : 'border-outline-variant hover:border-primary bg-[#1A1A1C]'}" data-id="${match.id}">
-      <div class="flex justify-between items-center mb-3">
-        <div class="flex items-center gap-2">
-          <span class="font-headline font-bold text-xl text-white tracking-wider">GAME ${match.game}</span>
-          <span class="bg-primary/10 border border-primary/40 text-primary font-headline text-[10px] px-2 py-0.5 font-bold uppercase tracking-wider">${match.phase}</span>
+    <div class="match-select-card hud-card p-5 border border-outline-variant hover:border-primary bg-[#1A1A1C] transition-all cursor-pointer group relative overflow-hidden flex flex-col justify-between" onclick="window.location.hash='/match/${match.id}'">
+      <div>
+        <div class="flex justify-between items-center mb-3">
+          <div class="flex items-center gap-2">
+            <span class="font-headline font-bold text-xl text-white tracking-wider">GAME ${match.game}</span>
+            <span class="bg-primary/10 border border-primary/40 text-primary font-headline text-[10px] px-2 py-0.5 font-bold uppercase tracking-wider">${match.phase}</span>
+          </div>
+          <span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors text-lg">arrow_forward</span>
         </div>
-        <span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors text-lg">read_more</span>
-      </div>
 
-      <div class="h-px bg-outline-variant mb-4"></div>
+        <div class="h-px bg-outline-variant mb-4"></div>
 
-      <div class="grid grid-cols-3 gap-2 mb-4 text-center">
-        <div class="bg-[#0E0E0F] p-2 border border-outline-variant/60">
-          <div class="font-headline font-bold text-white text-lg">${match.teamCount}</div>
-          <div class="font-label text-[9px] text-outline uppercase tracking-wider">TEAMS</div>
-        </div>
-        <div class="bg-[#0E0E0F] p-2 border border-outline-variant/60">
-          <div class="font-headline font-bold text-white text-lg">${match.players.reduce((s,p)=>s+p.eliminations,0)}</div>
-          <div class="font-label text-[9px] text-outline uppercase tracking-wider">KILLS</div>
-        </div>
-        <div class="bg-[#0E0E0F] p-2 border border-outline-variant/60">
-          <div class="font-headline font-bold text-primary text-lg">${topKiller?.eliminations ?? 0}</div>
-          <div class="font-label text-[9px] text-outline uppercase tracking-wider">TOP FRAGS</div>
-        </div>
-      </div>
-
-      ${winner ? `
-        <div class="flex items-center justify-between p-2.5 bg-status-success/5 border border-status-success/20 mb-2 gap-2">
-          <span class="font-label text-[10px] font-bold text-status-success uppercase tracking-widest flex items-center gap-1 shrink-0">
-            <span class="material-symbols-outlined text-xs">emoji_events</span> WINNER
-          </span>
-          <div class="flex items-center gap-2 truncate">
-            ${renderTeamLogoBadge(winner.teamName, 'w-5 h-5', 'border border-status-success/60')}
-            <span class="font-headline font-bold text-white text-sm tracking-wide uppercase truncate">${winner.teamName}</span>
+        <div class="grid grid-cols-3 gap-2 mb-4 text-center">
+          <div class="bg-[#0E0E0F] p-2 border border-outline-variant/60">
+            <div class="font-headline font-bold text-white text-lg">${match.teamCount}</div>
+            <div class="font-label text-[9px] text-outline uppercase tracking-wider">TEAMS</div>
+          </div>
+          <div class="bg-[#0E0E0F] p-2 border border-outline-variant/60">
+            <div class="font-headline font-bold text-white text-lg">${match.players.reduce((s,p)=>s+p.eliminations,0)}</div>
+            <div class="font-label text-[9px] text-outline uppercase tracking-wider">KILLS</div>
+          </div>
+          <div class="bg-[#0E0E0F] p-2 border border-outline-variant/60">
+            <div class="font-headline font-bold text-primary text-lg">${topKiller?.eliminations ?? 0}</div>
+            <div class="font-label text-[9px] text-outline uppercase tracking-wider">TOP FRAGS</div>
           </div>
         </div>
-      ` : ''}
 
-      ${topKiller ? `
-        <div class="flex items-center justify-between text-xs px-1">
-          <span class="font-label text-outline text-[10px] uppercase">TOP FRAGGER</span>
-          <span class="font-headline font-bold text-primary tracking-wide uppercase">${topKiller.playerName} (${topKiller.eliminations}K)</span>
-        </div>
-      ` : ''}
+        ${winner ? `
+          <div class="flex items-center justify-between p-2.5 bg-status-success/5 border border-status-success/20 mb-2 gap-2">
+            <span class="font-label text-[10px] font-bold text-status-success uppercase tracking-widest flex items-center gap-1 shrink-0">
+              <span class="material-symbols-outlined text-xs">emoji_events</span> WINNER
+            </span>
+            <div class="flex items-center gap-2 truncate">
+              ${renderTeamLogoBadge(winner.teamName, 'w-5 h-5', 'border border-status-success/60')}
+              <span class="font-headline font-bold text-white text-sm tracking-wide uppercase truncate">${winner.teamName}</span>
+            </div>
+          </div>
+        ` : ''}
+      </div>
+
+      <div class="flex justify-between items-center text-xs pt-2 border-t border-outline-variant/40 text-outline">
+        <span class="font-label text-[10px] uppercase">INSPECT TELEMETRY</span>
+        <span class="text-primary font-headline font-bold uppercase group-hover:translate-x-1 transition-transform flex items-center gap-0.5">
+          VIEW RESULT <span class="material-symbols-outlined text-sm">chevron_right</span>
+        </span>
+      </div>
     </div>
   `;
 }

@@ -1,9 +1,9 @@
 /**
  * PLAYERS PAGE & PLAYER PROFILE
  * Styled to match Stitch "Player Profile (Desktop)"
- * Team Logo Integration
+ * Team Logo Integration & Power Scores
  */
-import { renderPage, setActiveNav, toast, fmt, fmtMvp, fmtTime, getInitials, ordinal, placementColor } from '../ui.js';
+import { renderPage, setActiveNav, fmt, fmtPower, fmtTime, ordinal, placementColor } from '../ui.js';
 import { getSession } from '../state.js';
 import { renderTeamLogoBadge } from '../data/teamLogos.js';
 
@@ -13,7 +13,7 @@ export function renderPlayers(store, router, params = {}) {
   if (!session) { router.navigate('/login'); return; }
 
   const { players: playerRegistry } = store;
-  const allPlayers = Object.values(playerRegistry).sort((a, b) => b.totalMvpRate - a.totalMvpRate);
+  const allPlayers = Object.values(playerRegistry).sort((a, b) => b.totalPower - a.totalPower);
 
   if (!allPlayers.length) {
     renderPage(`<div class="container mx-auto py-12"><div class="hud-card p-12 text-center border border-outline-variant max-w-xl mx-auto"><span class="material-symbols-outlined text-5xl text-outline mb-4">folder_off</span><h2 class="font-headline font-bold text-2xl uppercase tracking-wider text-on-surface">NO PLAYER TELEMETRY</h2></div></div>`);
@@ -87,8 +87,8 @@ export function renderPlayers(store, router, params = {}) {
 
                 <div class="grid grid-cols-3 gap-1 bg-[#0E0E0F] p-2.5 border border-outline-variant/60 text-center mb-3">
                   <div>
-                    <div class="font-headline font-bold text-primary text-base">${fmtMvp(p.avgMvpRate)}</div>
-                    <div class="font-label text-[8px] text-outline uppercase">AVG MVP</div>
+                    <div class="font-headline font-bold text-primary text-base">${fmtPower(p.avgPower)}</div>
+                    <div class="font-label text-[8px] text-outline uppercase">POWER</div>
                   </div>
                   <div>
                     <div class="font-headline font-bold text-white text-base">${fmt(p.avgEliminations, 1)}</div>
@@ -147,7 +147,7 @@ function renderPlayerProfile(player, router) {
     return a.game - b.game;
   });
 
-  const bestMvp = Math.max(...player.perMatchStats.map(m => m.mvpRate));
+  const bestPower = Math.max(...player.perMatchStats.map(m => m.power));
   const bestKills = Math.max(...player.perMatchStats.map(m => m.eliminations));
   const bestDmg = Math.max(...player.perMatchStats.map(m => m.damage));
 
@@ -174,8 +174,8 @@ function renderPlayerProfile(player, router) {
 
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full md:w-auto">
           <div class="hud-card p-3 text-center bg-[#0E0E0F] min-w-[100px]">
-            <div class="font-headline font-bold text-primary text-xl">${fmtMvp(player.avgMvpRate)}</div>
-            <div class="font-label text-[9px] text-outline uppercase">AVG MVP</div>
+            <div class="font-headline font-bold text-primary text-xl">${fmtPower(player.avgPower)}</div>
+            <div class="font-label text-[9px] text-outline uppercase">POWER SCORE</div>
           </div>
           <div class="hud-card p-3 text-center bg-[#0E0E0F] min-w-[100px]">
             <div class="font-headline font-bold text-white text-xl">${fmt(player.avgEliminations, 1)}</div>
@@ -195,8 +195,8 @@ function renderPlayerProfile(player, router) {
       <!-- Best Performance Bento -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div class="hud-card p-5 border border-outline-variant bg-[#1A1A1C]">
-          <div class="font-label text-xs text-outline uppercase tracking-widest mb-1">HIGHEST MVP RATE</div>
-          <div class="font-headline font-bold text-3xl text-primary">${fmtMvp(bestMvp)}</div>
+          <div class="font-label text-xs text-outline uppercase tracking-widest mb-1">HIGHEST MATCH POWER</div>
+          <div class="font-headline font-bold text-3xl text-primary">${fmtPower(bestPower)}</div>
         </div>
         <div class="hud-card p-5 border border-outline-variant bg-[#1A1A1C]">
           <div class="font-label text-xs text-outline uppercase tracking-widest mb-1">BEST KILL GAME</div>
@@ -225,7 +225,7 @@ function renderPlayerProfile(player, router) {
                 <th>DAMAGE</th>
                 <th>KNOCKDOWNS</th>
                 <th>SURVIVAL TIME</th>
-                <th>MVP RATE</th>
+                <th>POWER SCORE</th>
               </tr>
             </thead>
             <tbody>
@@ -238,7 +238,7 @@ function renderPlayerProfile(player, router) {
                   <td>${fmt(m.damage)}</td>
                   <td>${m.knockdowns}</td>
                   <td>${fmtTime(m.survivalTime)}</td>
-                  <td class="font-headline font-bold text-primary text-base">${fmtMvp(m.mvpRate)}</td>
+                  <td class="font-headline font-bold text-primary text-base">${fmtPower(m.power)}</td>
                 </tr>
               `).join('')}
             </tbody>

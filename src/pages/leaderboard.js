@@ -1,9 +1,9 @@
 /**
  * LEADERBOARD PAGE
  * Styled to match Stitch "Fantasy Leaderboard (Desktop)"
- * Team Logo Integration
+ * Team Logo Integration & Squad Power Scores
  */
-import { renderPage, setActiveNav, toast, fmt, fmtMvp } from '../ui.js';
+import { renderPage, setActiveNav, fmt, fmtPower } from '../ui.js';
 import {
   getFantasyLeaderboard,
   getPredictionLeaderboard,
@@ -97,7 +97,7 @@ export function renderLeaderboard(store, router) {
                   <span class="bg-[#0E0E0F] border border-outline-variant/60 px-2 py-1 font-label text-[10px] text-outline flex items-center gap-1.5">
                     ${renderTeamLogoBadge(p.teamName, 'w-4 h-4', 'border border-outline-variant')}
                     <strong class="text-white">${p.playerName}</strong>
-                    <span class="text-primary font-bold">${fmtMvp(p.avgMvpRate)}</span>
+                    <span class="text-primary font-bold">${fmtPower(p.avgPower)}</span>
                   </span>
                 `).join('')}
               </div>
@@ -105,8 +105,8 @@ export function renderLeaderboard(store, router) {
           </div>
 
           <div class="text-left md:text-right border-t md:border-t-0 border-outline-variant pt-3 md:pt-0 w-full md:w-auto flex justify-between md:flex-col items-center md:items-end">
-            <span class="font-label text-[10px] text-outline uppercase">TOTAL MVP SCORE</span>
-            <span class="font-headline font-bold text-2xl text-primary">${fmtMvp(entry.score)}</span>
+            <span class="font-label text-[10px] text-outline uppercase">TOTAL SQUAD POWER</span>
+            <span class="font-headline font-bold text-2xl text-primary">${fmtPower(entry.score)}</span>
           </div>
 
         </div>

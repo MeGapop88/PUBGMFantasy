@@ -1,221 +1,237 @@
 /**
- * APP STATE — localStorage-backed state management
- * Handles: auth, predictions, fantasy teams
+ * STATE & PERSISTENCE MANAGEMENT
+ * Handles user auth sessions, match prediction scoring, and fantasy squad persistence.
+ * Uses Player & Squad Power Scores.
  */
 
-const KEYS = {
-  USERS:       'pmgo_users',
-  SESSION:     'pmgo_session',
+const STORAGE_KEYS = {
+  SESSION: 'pmgo_session',
+  USERS: 'pmgo_users',
   PREDICTIONS: 'pmgo_predictions',
-  FANTASY:     'pmgo_fantasy',
+  FANTASY: 'pmgo_fantasy',
 };
 
 // ============================================================
-// AUTH
+// 1. AUTHENTICATION
 // ============================================================
 
-export function getUsers() {
-  return JSON.parse(localStorage.getItem(KEYS.USERS) ?? '{}');
+export function getSession() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.SESSION);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
 }
 
-function saveUsers(users) {
-  localStorage.setItem(KEYS.USERS, JSON.stringify(users));
-}
+export function register(username, password) {
+  if (!username || username.trim().length < 2) {
+    throw new Error('Callsign must be at least 2 characters.');
+  }
+  if (!password || password.length < 4) {
+    throw new Error('Access code must be at least 4 characters.');
+  }
 
-export function registerUser(username, password) {
   const users = getUsers();
-  const key = username.toLowerCase().trim();
-  if (!key) throw new Error('Username cannot be empty');
-  if (users[key]) throw new Error('Username already taken');
-  if (password.length < 4) throw new Error('Password must be at least 4 characters');
-  users[key] = { username: username.trim(), passwordHash: btoa(password), createdAt: Date.now() };
-  saveUsers(users);
-  return { username: username.trim() };
-}
+  const key = username.trim().toLowerCase();
 
-export function loginUser(username, password) {
-  const users = getUsers();
-  const key = username.toLowerCase().trim();
-  const user = users[key];
-  if (!user) throw new Error('Username not found');
-  if (user.passwordHash !== btoa(password)) throw new Error('Incorrect password');
-  const session = { username: user.username, key, loginAt: Date.now() };
-  localStorage.setItem(KEYS.SESSION, JSON.stringify(session));
+  if (users[key]) {
+    throw new Error('Operative callsign already registered. Please login.');
+  }
+
+  users[key] = {
+    username: username.trim(),
+    password,
+    registeredAt: new Date().toISOString(),
+  };
+
+  localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+
+  const session = { key, username: username.trim() };
+  localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(session));
   return session;
 }
 
-export function getSession() {
-  return JSON.parse(localStorage.getItem(KEYS.SESSION) ?? 'null');
+export function login(username, password) {
+  const users = getUsers();
+  const key = username.trim().toLowerCase();
+  const user = users[key];
+
+  if (!user || user.password !== password) {
+    throw new Error('Invalid callsign or access code.');
+  }
+
+  const session = { key, username: user.username };
+  localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(session));
+  return session;
 }
+
+export const loginUser = login;
+export const registerUser = register;
 
 export function logout() {
-  localStorage.removeItem(KEYS.SESSION);
+  localStorage.removeItem(STORAGE_KEYS.SESSION);
 }
 
-export function requireAuth(router) {
-  if (!getSession()) {
-    router.navigate('/login');
-    return false;
+function getUsers() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.USERS);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
   }
-  return true;
 }
 
 // ============================================================
-// PREDICTIONS
+// 2. MATCH PREDICTIONS
 // ============================================================
 
-/**
- * Get all predictions for current user.
- * Shape: { [matchId]: { predictedTeamId, predictedTeamName, submittedAt, points } }
- */
 export function getUserPredictions() {
   const session = getSession();
   if (!session) return {};
-  const all = JSON.parse(localStorage.getItem(KEYS.PREDICTIONS) ?? '{}');
-  return all[session.key] ?? {};
+  try {
+    const all = JSON.parse(localStorage.getItem(STORAGE_KEYS.PREDICTIONS) || '{}');
+    return all[session.key] || {};
+  } catch {
+    return {};
+  }
 }
 
-/**
- * Submit or update a prediction for a match.
- */
 export function submitPrediction(matchId, teamId, teamName) {
   const session = getSession();
-  if (!session) throw new Error('Not logged in');
-  const all = JSON.parse(localStorage.getItem(KEYS.PREDICTIONS) ?? '{}');
+  if (!session) throw new Error('Authentication required.');
+
+  const all = JSON.parse(localStorage.getItem(STORAGE_KEYS.PREDICTIONS) || '{}');
   if (!all[session.key]) all[session.key] = {};
+
   all[session.key][matchId] = {
-    predictedTeamId:   teamId,
+    matchId,
+    predictedTeamId: teamId,
     predictedTeamName: teamName,
-    submittedAt:       Date.now(),
-    points:            null, // scored later
+    submittedAt: new Date().toISOString(),
   };
-  localStorage.setItem(KEYS.PREDICTIONS, JSON.stringify(all));
+
+  localStorage.setItem(STORAGE_KEYS.PREDICTIONS, JSON.stringify(all));
+  return all[session.key][matchId];
 }
 
-/**
- * Score predictions against real match results.
- * Scoring curve (base 10 pts max):
- *   1st=10, 2nd=8, 3rd=5, 4th=3, 5th=1, 6th+=0
- */
-const PLACEMENT_POINTS = { 1: 10, 2: 8, 3: 5, 4: 3, 5: 1 };
-
 export function scorePredictions(matches) {
-  const all = JSON.parse(localStorage.getItem(KEYS.PREDICTIONS) ?? '{}');
-  let changed = false;
+  const all = JSON.parse(localStorage.getItem(STORAGE_KEYS.PREDICTIONS) || '{}');
+  const pointsMap = { 1: 10, 2: 8, 3: 5, 4: 3, 5: 1 };
 
   Object.keys(all).forEach(userKey => {
-    const preds = all[userKey];
-    Object.keys(preds).forEach(matchId => {
-      const pred = preds[matchId];
-      // Always re-score so existing saved predictions pick up the updated point scale
+    const userPreds = all[userKey];
+    Object.keys(userPreds).forEach(matchId => {
+      const pred = userPreds[matchId];
       const match = matches.find(m => m.id === matchId);
-      if (!match) return;
-
-      const team = match.teams.find(t => String(t.teamId) === String(pred.predictedTeamId));
-      const placement = team?.rank ?? 16;
-      const newPoints = PLACEMENT_POINTS[placement] ?? 0;
-      
-      if (pred.points !== newPoints || pred.actualPlacement !== placement) {
-        pred.points = newPoints;
-        pred.actualPlacement = placement;
-        changed = true;
+      if (match) {
+        const finishedTeam = match.teams.find(t => String(t.teamId) === String(pred.predictedTeamId));
+        if (finishedTeam) {
+          pred.actualPlacement = finishedTeam.rank;
+          pred.points = pointsMap[finishedTeam.rank] ?? 0;
+        }
       }
     });
   });
 
-  if (changed) localStorage.setItem(KEYS.PREDICTIONS, JSON.stringify(all));
-  return all;
-}
-
-/**
- * Get prediction leaderboard across all users.
- */
-export function getPredictionLeaderboard() {
-  const all = JSON.parse(localStorage.getItem(KEYS.PREDICTIONS) ?? '{}');
-  const users = getUsers();
-  const lb = [];
-
-  Object.keys(all).forEach(key => {
-    const preds = all[key];
-    const totalPoints = Object.values(preds).reduce((s, p) => s + (p.points ?? 0), 0);
-    const totalPicks  = Object.values(preds).filter(p => p.points !== null).length;
-    const correctPicks = Object.values(preds).filter(p => p.points === 10).length;
-    lb.push({
-      key,
-      username: users[key]?.username ?? key,
-      totalPoints,
-      totalPicks,
-      correctPicks,
-    });
-  });
-
-  return lb.sort((a, b) => b.totalPoints - a.totalPoints);
+  localStorage.setItem(STORAGE_KEYS.PREDICTIONS, JSON.stringify(all));
 }
 
 // ============================================================
-// FANTASY TEAMS
+// 3. FANTASY SQUAD
 // ============================================================
 
 export function getMyFantasyTeam() {
   const session = getSession();
   if (!session) return null;
-  const all = JSON.parse(localStorage.getItem(KEYS.FANTASY) ?? '{}');
-  return all[session.key] ?? null;
+  try {
+    const all = JSON.parse(localStorage.getItem(STORAGE_KEYS.FANTASY) || '{}');
+    return all[session.key] || null;
+  } catch {
+    return null;
+  }
 }
 
 export function saveFantasyTeam(teamName, playerUIds, playerRegistry) {
   const session = getSession();
-  if (!session) throw new Error('Not logged in');
-  if (!teamName.trim()) throw new Error('Team name cannot be empty');
-  if (playerUIds.length !== 4) throw new Error('Must select exactly 4 players');
+  if (!session) throw new Error('Authentication required.');
 
+  if (!teamName || !teamName.trim()) {
+    throw new Error('Squad designation name required.');
+  }
+  if (!playerUIds || playerUIds.length !== 4) {
+    throw new Error('Squad must consist of exactly 4 operatives.');
+  }
+
+  // Validate max 2 from same team
   const teamCounts = {};
   playerUIds.forEach(uid => {
     const p = playerRegistry[uid];
-    if (!p) throw new Error(`Player ${uid} not found`);
-    teamCounts[p.teamId] = (teamCounts[p.teamId] ?? 0) + 1;
-    if (teamCounts[p.teamId] > 2) {
-      throw new Error(`Cannot pick more than 2 players from ${p.teamName}`);
+    if (p) {
+      teamCounts[p.teamId] = (teamCounts[p.teamId] || 0) + 1;
+      if (teamCounts[p.teamId] > 2) {
+        throw new Error(`Max 2 operatives allowed from ${p.teamName}.`);
+      }
     }
   });
 
-  const all = JSON.parse(localStorage.getItem(KEYS.FANTASY) ?? '{}');
-  const nameConflict = Object.entries(all).some(([key, team]) =>
-    key !== session.key && team.teamName.toLowerCase() === teamName.trim().toLowerCase()
-  );
-  if (nameConflict) throw new Error('Team name already taken by another user');
-
+  const all = JSON.parse(localStorage.getItem(STORAGE_KEYS.FANTASY) || '{}');
   all[session.key] = {
     teamName: teamName.trim(),
     playerUIds,
-    createdAt: all[session.key]?.createdAt ?? Date.now(),
-    updatedAt: Date.now(),
-    lockedAt: null,
+    savedAt: new Date().toISOString(),
   };
-  localStorage.setItem(KEYS.FANTASY, JSON.stringify(all));
+
+  localStorage.setItem(STORAGE_KEYS.FANTASY, JSON.stringify(all));
+  return all[session.key];
 }
 
+// ============================================================
+// 4. LEADERBOARDS
+// ============================================================
+
 export function getFantasyLeaderboard(playerRegistry) {
-  const all  = JSON.parse(localStorage.getItem(KEYS.FANTASY) ?? '{}');
+  const all = JSON.parse(localStorage.getItem(STORAGE_KEYS.FANTASY) || '{}');
   const users = getUsers();
-  const lb = [];
 
-  Object.entries(all).forEach(([key, team]) => {
-    let score = 0;
-    const playerDetails = team.playerUIds.map(uid => {
-      const p = playerRegistry[uid];
-      if (p) score += p.totalMvpRate;
-      return p ?? null;
-    }).filter(Boolean);
+  const entries = Object.keys(all).map(userKey => {
+    const data = all[userKey];
+    const username = users[userKey]?.username || userKey;
+    const players = data.playerUIds.map(uid => playerRegistry[uid]).filter(Boolean);
+    const score = players.reduce((s, p) => s + (p.avgPower || 0), 0);
 
-    lb.push({
-      key,
-      username: users[key]?.username ?? key,
-      teamName: team.teamName,
+    return {
+      key: userKey,
+      username,
+      teamName: data.teamName,
+      players,
       score,
-      players: playerDetails,
-    });
+      savedAt: data.savedAt,
+    };
   });
 
-  return lb.sort((a, b) => b.score - a.score);
+  return entries.sort((a, b) => b.score - a.score);
+}
+
+export function getPredictionLeaderboard() {
+  const all = JSON.parse(localStorage.getItem(STORAGE_KEYS.PREDICTIONS) || '{}');
+  const users = getUsers();
+
+  const entries = Object.keys(all).map(userKey => {
+    const preds = all[userKey];
+    const username = users[userKey]?.username || userKey;
+    const picks = Object.values(preds);
+    const totalPoints = picks.reduce((s, p) => s + (p.points ?? 0), 0);
+    const correctPicks = picks.filter(p => p.points === 10).length;
+
+    return {
+      key: userKey,
+      username,
+      totalPoints,
+      totalPicks: picks.length,
+      correctPicks,
+    };
+  });
+
+  return entries.sort((a, b) => b.totalPoints - a.totalPoints || b.correctPicks - a.correctPicks);
 }

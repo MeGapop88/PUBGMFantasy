@@ -1,9 +1,9 @@
 /**
  * FANTASY DRAFT & ACTIVE SQUAD PAGE
  * Designed to match Stitch "Fantasy Draft (Desktop)" & "My Team - Active (Desktop)"
- * Team Logo Integration
+ * Powered by Player and Squad Power Score metrics (replaces MVP%).
  */
-import { renderPage, setActiveNav, toast, fmt, fmtMvp, fmtTime, getInitials } from '../ui.js';
+import { renderPage, setActiveNav, toast, fmt, fmtPower, fmtPowerNumber, fmtTime } from '../ui.js';
 import { getMyFantasyTeam, saveFantasyTeam, getSession } from '../state.js';
 import { renderTeamLogoBadge } from '../data/teamLogos.js';
 
@@ -12,8 +12,8 @@ export function renderFantasy(store, router) {
   const session = getSession();
   if (!session) { router.navigate('/login'); return; }
 
-  const { players: playerRegistry, teams: teamRegistry } = store;
-  const allPlayers = Object.values(playerRegistry).sort((a, b) => b.totalMvpRate - a.totalMvpRate);
+  const { players: playerRegistry } = store;
+  const allPlayers = Object.values(playerRegistry).sort((a, b) => b.totalPower - a.totalPower);
 
   if (!allPlayers.length) {
     renderPage(`
@@ -31,7 +31,7 @@ export function renderFantasy(store, router) {
   const existingTeam = getMyFantasyTeam();
   let selectedUIds = existingTeam?.playerUIds ? [...existingTeam.playerUIds] : [];
   let teamName = existingTeam?.teamName || 'SQUADRON ZERO';
-  let viewMode = (existingTeam && selectedUIds.length === 4) ? 'ACTIVE' : 'DRAFT'; // 'ACTIVE' | 'DRAFT'
+  let viewMode = (existingTeam && selectedUIds.length === 4) ? 'ACTIVE' : 'DRAFT';
 
   let teamFilter = 'ALL';
   let searchQuery = '';
@@ -59,10 +59,10 @@ export function renderFantasy(store, router) {
    */
   function renderActiveSquadView() {
     const squadPlayers = selectedUIds.map(uid => playerRegistry[uid]).filter(Boolean);
-    const totalMvp = squadPlayers.reduce((s, p) => s + p.totalMvpRate, 0);
-    const totalKd  = squadPlayers.reduce((s, p) => s + p.kd, 0);
-    const avgKd    = (totalKd / squadPlayers.length).toFixed(2);
-    const totalDmg = squadPlayers.reduce((s, p) => s + p.totalDamage, 0);
+    const totalPower = squadPlayers.reduce((s, p) => s + (p.avgPower || 0), 0);
+    const totalKd    = squadPlayers.reduce((s, p) => s + p.kd, 0);
+    const avgKd      = (totalKd / squadPlayers.length).toFixed(2);
+    const totalDmg   = squadPlayers.reduce((s, p) => s + p.totalDamage, 0);
 
     const roles = ['IN-GAME LEADER', 'ENTRY FRAGGER', 'SUPPORT', 'FLEX OPERATIVE'];
 
@@ -94,8 +94,8 @@ export function renderFantasy(store, router) {
                 <span class="font-headline font-bold text-white text-2xl">${fmt(totalDmg)}</span>
               </div>
               <div class="flex flex-col">
-                <span class="font-label text-[10px] font-bold text-primary uppercase tracking-wider">TOTAL MVP SCORE</span>
-                <span class="font-headline font-bold text-primary text-2xl">${fmtMvp(totalMvp)}</span>
+                <span class="font-label text-[10px] font-bold text-primary uppercase tracking-wider">SQUAD POWER</span>
+                <span class="font-headline font-bold text-primary text-2xl">${fmtPower(totalPower)}</span>
               </div>
             </div>
 
@@ -142,8 +142,8 @@ export function renderFantasy(store, router) {
 
                   <div class="grid grid-cols-2 gap-2 border-t border-outline-variant/80 pt-3 text-xs">
                     <div class="flex flex-col">
-                      <span class="font-label text-[9px] text-outline uppercase">AVG MVP RATE</span>
-                      <span class="font-headline font-bold text-primary text-base">${fmtMvp(player.avgMvpRate)}</span>
+                      <span class="font-label text-[9px] text-outline uppercase">POWER SCORE</span>
+                      <span class="font-headline font-bold text-primary text-base">${fmtPower(player.avgPower)}</span>
                     </div>
                     <div class="flex flex-col">
                       <span class="font-label text-[9px] text-outline uppercase">K/D RATIO</span>
@@ -191,9 +191,9 @@ export function renderFantasy(store, router) {
       p.teamName.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const totalMvp = selectedUIds.reduce((s, uid) => {
+    const totalPower = selectedUIds.reduce((s, uid) => {
       const p = playerRegistry[uid];
-      return s + (p?.totalMvpRate ?? 0);
+      return s + (p?.avgPower ?? 0);
     }, 0);
 
     renderPage(`
@@ -245,13 +245,13 @@ export function renderFantasy(store, router) {
                     <div class="absolute inset-0 bg-gradient-to-t from-[#0A0A0B] via-transparent to-transparent"></div>
                   </div>
 
-                  <!-- Card Top Bar (Team Logo Badge + MVP Rate) -->
+                  <!-- Card Top Bar (Team Logo Badge + Power Score) -->
                   <div class="relative z-10 flex justify-between p-4 items-start">
                     ${renderTeamLogoBadge(p.teamName, 'w-10 h-10', isSelected ? 'border-2 border-primary' : 'border border-outline-variant')}
 
                     <div class="bg-[#0A0A0B]/90 border border-outline-variant px-2.5 py-1 flex flex-col items-center justify-center">
-                      <span class="font-label text-[9px] text-outline font-bold uppercase tracking-wider leading-none">MVP RATE</span>
-                      <span class="font-headline font-bold text-base text-primary leading-none mt-1">${fmtMvp(p.avgMvpRate)}</span>
+                      <span class="font-label text-[9px] text-outline font-bold uppercase tracking-wider leading-none">POWER</span>
+                      <span class="font-headline font-bold text-base text-primary leading-none mt-1">${fmtPower(p.avgPower)}</span>
                     </div>
                   </div>
 
@@ -318,7 +318,7 @@ export function renderFantasy(store, router) {
                       <div class="font-headline font-bold text-lg leading-tight text-white uppercase truncate">${p.playerName}</div>
                     </div>
 
-                    <div class="font-headline font-bold text-base text-primary">${fmtMvp(p.avgMvpRate)}</div>
+                    <div class="font-headline font-bold text-base text-primary">${fmtPower(p.avgPower)}</div>
 
                     <button class="remove-btn text-outline hover:text-red-400 p-1" data-uid="${p.uId}">
                       <span class="material-symbols-outlined text-base">close</span>
@@ -339,8 +339,8 @@ export function renderFantasy(store, router) {
             <!-- Combined Stats & Warning Section -->
             <div class="mt-4 border-t border-[#2E2E32] pt-4 flex flex-col gap-3">
               <div class="flex justify-between items-center">
-                <span class="font-headline font-bold text-xs text-outline uppercase">COMBINED MVP RATE</span>
-                <span class="font-headline font-bold text-2xl text-primary">${fmtMvp(totalMvp)}</span>
+                <span class="font-headline font-bold text-xs text-outline uppercase">COMBINED SQUAD POWER</span>
+                <span class="font-headline font-bold text-2xl text-primary">${fmtPower(totalPower)}</span>
               </div>
 
               <div class="bg-[#1A1A1C] border-l-2 border-primary p-3 flex gap-3 items-start">

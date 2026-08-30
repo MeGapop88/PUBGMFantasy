@@ -22,9 +22,13 @@ export class Router {
     this._resolve();
   }
 
+  resolve() {
+    this._resolve();
+  }
+
   _resolve() {
     const hash = window.location.hash.slice(1) || '/login';
-    // Handle parameterized routes like /player/:uid
+    // Handle parameterized routes like /player/:uid or /match/:id
     for (const [pattern, handler] of Object.entries(this.routes)) {
       const params = matchRoute(pattern, hash);
       if (params !== null) {
@@ -33,8 +37,8 @@ export class Router {
         return;
       }
     }
-    // Default: redirect to login
-    this.navigate('/login');
+    // Default: redirect to dashboard if logged in, else login
+    this.navigate('/dashboard');
   }
 }
 
