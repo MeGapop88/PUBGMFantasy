@@ -105,3 +105,18 @@ export function getInitials(name) {
   if (!name) return '?';
   return name.replace(/[^a-zA-Z0-9]/g, '').slice(0, 2).toUpperCase();
 }
+
+/**
+ * Renders a green up / red down trend indicator, or nothing for 'flat'/null
+ * (not enough match history, or too small a change to call a direction).
+ * See loader.js computePlayerTrend() for how the trend value is derived.
+ */
+export function renderTrendBadge(trend) {
+  if (trend === 'up') {
+    return `<span class="material-symbols-outlined text-status-success text-sm" title="Trending up">arrow_upward</span>`;
+  }
+  if (trend === 'down') {
+    return `<span class="material-symbols-outlined text-red-400 text-sm" title="Trending down">arrow_downward</span>`;
+  }
+  return '';
+}

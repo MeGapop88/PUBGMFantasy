@@ -97,9 +97,10 @@ export function getUserPredictions() {
   }
 }
 
-export function submitPrediction(matchId, teamId, teamName) {
+export function submitPrediction(matchId, teamId, teamName, { isOpen } = {}) {
   const session = getSession();
   if (!session) throw new Error('Authentication required.');
+  if (!isOpen) throw new Error('Prediction window closed for this match.');
 
   const all = JSON.parse(localStorage.getItem(STORAGE_KEYS.PREDICTIONS) || '{}');
   if (!all[session.key]) all[session.key] = {};

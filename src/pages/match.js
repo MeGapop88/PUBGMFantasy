@@ -126,7 +126,13 @@ export function renderMatch(store, router, params = {}) {
 
             <!-- Team Rows with Accordions -->
             <div class="flex flex-col gap-2.5">
-              ${sortedTeams.map(t => {
+              ${!match.hasResults ? `
+                <div class="hud-card p-8 text-center border border-outline-variant bg-[#0E0E0F]">
+                  <span class="material-symbols-outlined text-4xl text-outline mb-2 block">schedule</span>
+                  <div class="font-headline font-bold text-sm text-white uppercase tracking-wider">MATCH NOT YET PLAYED</div>
+                  <div class="font-label text-xs text-outline mt-1">Team standings will populate once this game's telemetry is ingested.</div>
+                </div>
+              ` : sortedTeams.map(t => {
                 const rank = t.rank;
                 const isTop3 = rank <= 3;
                 const isExpanded = String(t.teamId) === String(expandedTeamId);

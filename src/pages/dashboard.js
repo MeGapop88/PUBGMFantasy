@@ -11,14 +11,16 @@ export function renderDashboard(store) {
 
   const { matches, players, teams, finalsStandings } = store;
 
-  if (!matches.length) {
+  // With a roster-seeded team registry, standings are never truly empty once
+  // the roster loads — this only fires if the roster itself failed to load.
+  if (!Object.keys(teams).length) {
     renderPage(`
       <div class="container mx-auto py-12">
         <div class="hud-card p-12 text-center border border-outline-variant max-w-xl mx-auto">
           <span class="material-symbols-outlined text-5xl text-outline mb-4">folder_off</span>
-          <h2 class="font-headline font-bold text-2xl uppercase tracking-wider text-on-surface mb-2">NO TELEMETRY INGESTED</h2>
+          <h2 class="font-headline font-bold text-2xl uppercase tracking-wider text-on-surface mb-2">NO ROSTER DATA</h2>
           <p class="font-label text-sm text-outline mb-6">
-            Place your 36 PMGO match JSON files in <code class="text-primary bg-black px-2 py-1">public/data/</code> and refresh.
+            Team/player roster could not be loaded. Check <code class="text-primary bg-black px-2 py-1">public/data/roster.json</code>.
           </p>
         </div>
       </div>

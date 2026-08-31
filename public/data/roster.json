@@ -1,0 +1,750 @@
+{
+  "teams": [
+    {
+      "teamId": 14,
+      "teamName": "721 ESPORTS",
+      "shortCode": "721",
+      "color": "#FF6B00",
+      "logoId": null
+    },
+    {
+      "teamId": 16,
+      "teamName": "7C ESPORTS",
+      "shortCode": "7CE",
+      "color": "#FF6B00",
+      "logoId": null
+    },
+    {
+      "teamId": 15,
+      "teamName": "ALULA Esports",
+      "shortCode": "ALU",
+      "color": "#FF6B00",
+      "logoId": null
+    },
+    {
+      "teamId": 10,
+      "teamName": "CB9 Esports",
+      "shortCode": "CB9",
+      "color": "#FF6B00",
+      "logoId": null
+    },
+    {
+      "teamId": 19,
+      "teamName": "DAT ALREMAL",
+      "shortCode": "DAT",
+      "color": "#FF6B00",
+      "logoId": null
+    },
+    {
+      "teamId": 17,
+      "teamName": "ETSH ESPORTS",
+      "shortCode": "ETS",
+      "color": "#FF6B00",
+      "logoId": null
+    },
+    {
+      "teamId": 20,
+      "teamName": "FOUR WIZ",
+      "shortCode": "FOU",
+      "color": "#FF6B00",
+      "logoId": null
+    },
+    {
+      "teamId": 6,
+      "teamName": "Geekay Esports",
+      "shortCode": "GEE",
+      "color": "#FF6B00",
+      "logoId": null
+    },
+    {
+      "teamId": 9,
+      "teamName": "iKURD ESPORTS",
+      "shortCode": "IKU",
+      "color": "#FF6B00",
+      "logoId": null
+    },
+    {
+      "teamId": 11,
+      "teamName": "KHK Esports",
+      "shortCode": "KHK",
+      "color": "#FF6B00",
+      "logoId": null
+    },
+    {
+      "teamId": 13,
+      "teamName": "MASTER TEAM",
+      "shortCode": "MAS",
+      "color": "#FF6B00",
+      "logoId": null
+    },
+    {
+      "teamId": 7,
+      "teamName": "Nigma Galaxy",
+      "shortCode": "NIG",
+      "color": "#FF6B00",
+      "logoId": null
+    },
+    {
+      "teamId": 5,
+      "teamName": "R8 ESPORTS",
+      "shortCode": "R8E",
+      "color": "#FF6B00",
+      "logoId": null
+    },
+    {
+      "teamId": 18,
+      "teamName": "RA'AD",
+      "shortCode": "RAA",
+      "color": "#FF6B00",
+      "logoId": null
+    },
+    {
+      "teamId": 8,
+      "teamName": "Team Vision",
+      "shortCode": "TEA",
+      "color": "#FF6B00",
+      "logoId": null
+    },
+    {
+      "teamId": 12,
+      "teamName": "THE HUNTERS",
+      "shortCode": "THE",
+      "color": "#FF6B00",
+      "logoId": null
+    }
+  ],
+  "players": [
+    {
+      "uId": "5257656433",
+      "playerName": "4wClever",
+      "teamId": 20,
+      "teamName": "FOUR WIZ",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "51423912635",
+      "playerName": "4wM1D0",
+      "teamId": 20,
+      "teamName": "FOUR WIZ",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5127303401",
+      "playerName": "4wM1RACLE",
+      "teamId": 20,
+      "teamName": "FOUR WIZ",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "51618238218",
+      "playerName": "4wSALAM96",
+      "teamId": 20,
+      "teamName": "FOUR WIZ",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5195613991",
+      "playerName": "4wTOMEū",
+      "teamId": 20,
+      "teamName": "FOUR WIZ",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5161385566",
+      "playerName": "721ALEKOOOOOOO",
+      "teamId": 14,
+      "teamName": "721 ESPORTS",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5897700612",
+      "playerName": "721MALLLLLLLIK",
+      "teamId": 14,
+      "teamName": "721 ESPORTS",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "590726490",
+      "playerName": "721MASKOOOtxc",
+      "teamId": 14,
+      "teamName": "721 ESPORTS",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "582243220",
+      "playerName": "721REHANNNNNNN",
+      "teamId": 14,
+      "teamName": "721 ESPORTS",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5288910519",
+      "playerName": "7cAssaf",
+      "teamId": 16,
+      "teamName": "7C ESPORTS",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5133670012",
+      "playerName": "7cEmmad",
+      "teamId": 16,
+      "teamName": "7C ESPORTS",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5221639448",
+      "playerName": "7cLAITH",
+      "teamId": 16,
+      "teamName": "7C ESPORTS",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5167685431",
+      "playerName": "7cPowerFul",
+      "teamId": 16,
+      "teamName": "7C ESPORTS",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5529741218",
+      "playerName": "CB9AMJED",
+      "teamId": 10,
+      "teamName": "CB9 Esports",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5409255937",
+      "playerName": "CB9DEXTER",
+      "teamId": 10,
+      "teamName": "CB9 Esports",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5114075848",
+      "playerName": "CB9GHARYANi",
+      "teamId": 10,
+      "teamName": "CB9 Esports",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5243947041",
+      "playerName": "CB9KILUAA",
+      "teamId": 10,
+      "teamName": "CB9 Esports",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "599002057",
+      "playerName": "CB9MOSTA",
+      "teamId": 10,
+      "teamName": "CB9 Esports",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5483288237",
+      "playerName": "DATŪANASS",
+      "teamId": 19,
+      "teamName": "DAT ALREMAL",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5189736212",
+      "playerName": "DATŪCAREZMAA",
+      "teamId": 19,
+      "teamName": "DAT ALREMAL",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "51906775783",
+      "playerName": "DATŪKLUZZ",
+      "teamId": 19,
+      "teamName": "DAT ALREMAL",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5660764078",
+      "playerName": "DATŪLORD",
+      "teamId": 19,
+      "teamName": "DAT ALREMAL",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5644625729",
+      "playerName": "DATŪMAFIA",
+      "teamId": 19,
+      "teamName": "DAT ALREMAL",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5311136126",
+      "playerName": "DATŪROMAAA",
+      "teamId": 19,
+      "teamName": "DAT ALREMAL",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "540402266",
+      "playerName": "ETSHīNASSER74",
+      "teamId": 17,
+      "teamName": "ETSH ESPORTS",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "587365118",
+      "playerName": "ETSHŲAPKRINO",
+      "teamId": 17,
+      "teamName": "ETSH ESPORTS",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5533848379",
+      "playerName": "ETSHŲFAHiTA",
+      "teamId": 17,
+      "teamName": "ETSH ESPORTS",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5249240035",
+      "playerName": "ETSHŲSPEED32",
+      "teamId": 17,
+      "teamName": "ETSH ESPORTS",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5540038619",
+      "playerName": "ETSHŲX",
+      "teamId": 17,
+      "teamName": "ETSH ESPORTS",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "545811785",
+      "playerName": "GeekEZ4BADBOY",
+      "teamId": 6,
+      "teamName": "Geekay Esports",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5183626746",
+      "playerName": "GeekKEVIN88",
+      "teamId": 6,
+      "teamName": "Geekay Esports",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5160608491",
+      "playerName": "GeekRAGNARoK26",
+      "teamId": 6,
+      "teamName": "Geekay Esports",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5187783596",
+      "playerName": "GeekSAFG",
+      "teamId": 6,
+      "teamName": "Geekay Esports",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "550188444",
+      "playerName": "huntATAL",
+      "teamId": 12,
+      "teamName": "THE HUNTERS",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5255923152",
+      "playerName": "huntBROLY444",
+      "teamId": 12,
+      "teamName": "THE HUNTERS",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5338662199",
+      "playerName": "huntCAZORLAA",
+      "teamId": 12,
+      "teamName": "THE HUNTERS",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5893941027",
+      "playerName": "huntROZESS",
+      "teamId": 12,
+      "teamName": "THE HUNTERS",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "51856185006",
+      "playerName": "huntSOSAVn1",
+      "teamId": 12,
+      "teamName": "THE HUNTERS",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5684316410",
+      "playerName": "iKURDxASADD",
+      "teamId": 9,
+      "teamName": "iKURD ESPORTS",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "51643804085",
+      "playerName": "iKURDxGØRAN",
+      "teamId": 9,
+      "teamName": "iKURD ESPORTS",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "566196581",
+      "playerName": "iKURDxHIWAklar",
+      "teamId": 9,
+      "teamName": "iKURD ESPORTS",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "51399495786",
+      "playerName": "iKURDxMAN98",
+      "teamId": 9,
+      "teamName": "iKURD ESPORTS",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "51362849375",
+      "playerName": "iKURDxNARUTOo",
+      "teamId": 9,
+      "teamName": "iKURD ESPORTS",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5407634936",
+      "playerName": "khk1RFAN",
+      "teamId": 11,
+      "teamName": "KHK Esports",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5449706460",
+      "playerName": "KHKAMOOR",
+      "teamId": 11,
+      "teamName": "KHK Esports",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "578351869",
+      "playerName": "KhkCASANOVA77K",
+      "teamId": 11,
+      "teamName": "KHK Esports",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5440839271",
+      "playerName": "khkNW٭",
+      "teamId": 11,
+      "teamName": "KHK Esports",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5284171124",
+      "playerName": "khkWALOODī",
+      "teamId": 11,
+      "teamName": "KHK Esports",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5794847538",
+      "playerName": "mstrBOSSē",
+      "teamId": 13,
+      "teamName": "MASTER TEAM",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5121774582",
+      "playerName": "mstrEYAD",
+      "teamId": 13,
+      "teamName": "MASTER TEAM",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5962005831",
+      "playerName": "mstrKARA",
+      "teamId": 13,
+      "teamName": "MASTER TEAM",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5216312322",
+      "playerName": "mstrMORSHē",
+      "teamId": 13,
+      "teamName": "MASTER TEAM",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5551237559",
+      "playerName": "mstrSAROUT",
+      "teamId": 13,
+      "teamName": "MASTER TEAM",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "575314036",
+      "playerName": "mstrSONIC¹iQ",
+      "teamId": 13,
+      "teamName": "MASTER TEAM",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5553263337",
+      "playerName": "ngx4YDO",
+      "teamId": 7,
+      "teamName": "Nigma Galaxy",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5227970312",
+      "playerName": "ngxKOOPS02",
+      "teamId": 7,
+      "teamName": "Nigma Galaxy",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "560173736",
+      "playerName": "ngxLORDū",
+      "teamId": 7,
+      "teamName": "Nigma Galaxy",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "544358030",
+      "playerName": "ngxRAOUF",
+      "teamId": 7,
+      "teamName": "Nigma Galaxy",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "533765948",
+      "playerName": "ngxSaTaN33ň",
+      "teamId": 7,
+      "teamName": "Nigma Galaxy",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5363653098",
+      "playerName": "R8AMOORI",
+      "teamId": 5,
+      "teamName": "R8 ESPORTS",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5697795507",
+      "playerName": "R8B5ET",
+      "teamId": 5,
+      "teamName": "R8 ESPORTS",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5193946053",
+      "playerName": "R8Marth",
+      "teamId": 5,
+      "teamName": "R8 ESPORTS",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5660812052",
+      "playerName": "R8PRESTLGE",
+      "teamId": 5,
+      "teamName": "R8 ESPORTS",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "525873900",
+      "playerName": "R8SKTON",
+      "teamId": 5,
+      "teamName": "R8 ESPORTS",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5645195757",
+      "playerName": "RAADFEVOO",
+      "teamId": 18,
+      "teamName": "RA'AD",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5182883392",
+      "playerName": "RAADNOSSA99",
+      "teamId": 18,
+      "teamName": "RA'AD",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5439143800",
+      "playerName": "RAADōLabubu",
+      "teamId": 18,
+      "teamName": "RA'AD",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "553057686",
+      "playerName": "RAADRINOOOO",
+      "teamId": 18,
+      "teamName": "RA'AD",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5578902723",
+      "playerName": "RAADZUXXY隋",
+      "teamId": 18,
+      "teamName": "RA'AD",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "517825939",
+      "playerName": "UlaKhatab",
+      "teamId": 15,
+      "teamName": "ALULA Esports",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "51583512133",
+      "playerName": "UlaKŁAWS",
+      "teamId": 15,
+      "teamName": "ALULA Esports",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "524924374",
+      "playerName": "UlaQuick",
+      "teamId": 15,
+      "teamName": "ALULA Esports",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5561201188",
+      "playerName": "UlaR3B",
+      "teamId": 15,
+      "teamName": "ALULA Esports",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5190248274",
+      "playerName": "UlaY4SR",
+      "teamId": 15,
+      "teamName": "ALULA Esports",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5166868820",
+      "playerName": "VSNxAGA1NN",
+      "teamId": 8,
+      "teamName": "Team Vision",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "51525090059",
+      "playerName": "VSNxENJOY",
+      "teamId": 8,
+      "teamName": "Team Vision",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5601956451",
+      "playerName": "VSNxMarcelo511",
+      "teamId": 8,
+      "teamName": "Team Vision",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "513671838",
+      "playerName": "VSNxNawaF",
+      "teamId": 8,
+      "teamName": "Team Vision",
+      "photoId": null,
+      "role": null
+    },
+    {
+      "uId": "5181549151",
+      "playerName": "VSNxNvrAlone",
+      "teamId": 8,
+      "teamName": "Team Vision",
+      "photoId": null,
+      "role": null
+    }
+  ]
+}

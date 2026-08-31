@@ -3,9 +3,28 @@
  * Designed to match Stitch "Fantasy Draft (Desktop)" & "My Team - Active (Desktop)"
  * Powered by Player and Squad Power Score metrics (replaces MVP%).
  */
-import { renderPage, setActiveNav, toast, fmt, fmtPower, fmtPowerNumber, fmtTime } from '../ui.js';
+import { renderPage, setActiveNav, toast, fmt, fmtPower, fmtPowerNumber, fmtTime, renderTrendBadge, getInitials } from '../ui.js';
 import { getMyFantasyTeam, saveFantasyTeam, getSession } from '../state.js';
 import { renderTeamLogoBadge } from '../data/teamLogos.js';
+import { getPlayerPhotoUrl } from '../data/api.js';
+import { computePlayerTrend } from '../data/loader.js';
+
+/**
+ * Renders either a real player photo (with an onerror fallback to initials)
+ * or, when no photo URL is available yet (today's reality), the initials
+ * fallback directly — no broken-image flash.
+ */
+function renderPlayerPhotoLayer(player, imgClass, initialsClass) {
+  const url = getPlayerPhotoUrl(player.uId);
+  const initials = getInitials(player.playerName);
+  if (url) {
+    return `
+      <img src="${url}" alt="${player.playerName}" class="${imgClass}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+      <div class="${initialsClass}" style="display:none">${initials}</div>
+    `;
+  }
+  return `<div class="${initialsClass}">${initials}</div>`;
+}
 
 export function renderFantasy(store, router) {
   setActiveNav('fantasy');
@@ -114,8 +133,12 @@ export function renderFantasy(store, router) {
             return `
               <article class="hud-card relative border border-outline-variant bg-[#1A1A1C] overflow-hidden group cursor-pointer transition-all duration-300 flex flex-col justify-end min-h-[500px]" onclick="window.location.hash='/player/${player.uId}'">
                 
-                <div class="absolute inset-0 bg-cover bg-top grayscale group-hover:grayscale-0 transition-all duration-500 opacity-70 group-hover:scale-105"
-                  style="background-image: url('https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=600&q=80')">
+                <div class="absolute inset-0 overflow-hidden group-hover:scale-105 transition-transform duration-500">
+                  ${renderPlayerPhotoLayer(
+                    player,
+                    'w-full h-full object-cover object-top grayscale group-hover:grayscale-0 transition-all duration-500 opacity-70',
+                    'w-full h-full flex items-center justify-center bg-[#0E0E0F] font-headline font-bold text-4xl text-primary/40 grayscale group-hover:grayscale-0 transition-all duration-500 opacity-70'
+                  )}
                 </div>
 
                 <div class="absolute inset-0 bg-gradient-to-t from-[#0A0A0B] via-[#0A0A0B]/80 to-transparent z-10"></div>
@@ -143,7 +166,7 @@ export function renderFantasy(store, router) {
                   <div class="grid grid-cols-2 gap-2 border-t border-outline-variant/80 pt-3 text-xs">
                     <div class="flex flex-col">
                       <span class="font-label text-[9px] text-outline uppercase">POWER SCORE</span>
-                      <span class="font-headline font-bold text-primary text-base">${fmtPower(player.avgPower)}</span>
+                      <span class="font-headline font-bold text-primary text-base flex items-center gap-1">${fmtPower(player.avgPower)} ${renderTrendBadge(computePlayerTrend(player.perMatchStats))}</span>
                     </div>
                     <div class="flex flex-col">
                       <span class="font-label text-[9px] text-outline uppercase">K/D RATIO</span>
@@ -240,7 +263,11 @@ export function renderFantasy(store, router) {
                 <div class="hud-card flex flex-col relative group cursor-pointer transition-all overflow-hidden h-64 border ${isSelected ? 'border-primary shadow-[0_0_15px_rgba(255,107,0,0.3)]' : isDisabled ? 'opacity-40 border-outline-variant cursor-not-allowed' : 'border-[#2E2E32] hover:border-primary'} bg-[#1A1A1C]" data-uid="${p.uId}">
                   
                   <div class="absolute inset-0 z-0">
-                    <div class="w-full h-full bg-cover bg-top grayscale group-hover:grayscale-0 transition-all duration-500 opacity-40 group-hover:opacity-70" style="background-image: url('https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=500&q=80')"></div>
+                    ${renderPlayerPhotoLayer(
+                      p,
+                      'w-full h-full object-cover object-top grayscale group-hover:grayscale-0 transition-all duration-500 opacity-40 group-hover:opacity-70',
+                      'w-full h-full flex items-center justify-center bg-[#0E0E0F] font-headline font-bold text-3xl text-primary/30 grayscale group-hover:grayscale-0 transition-all duration-500 opacity-40 group-hover:opacity-70'
+                    )}
                     <div class="absolute bottom-0 w-full h-24 bg-primary/20 mix-blend-color-burn"></div>
                     <div class="absolute inset-0 bg-gradient-to-t from-[#0A0A0B] via-transparent to-transparent"></div>
                   </div>
@@ -251,7 +278,7 @@ export function renderFantasy(store, router) {
 
                     <div class="bg-[#0A0A0B]/90 border border-outline-variant px-2.5 py-1 flex flex-col items-center justify-center">
                       <span class="font-label text-[9px] text-outline font-bold uppercase tracking-wider leading-none">POWER</span>
-                      <span class="font-headline font-bold text-base text-primary leading-none mt-1">${fmtPower(p.avgPower)}</span>
+                      <span class="font-headline font-bold text-base text-primary leading-none mt-1 flex items-center gap-1">${fmtPower(p.avgPower)} ${renderTrendBadge(computePlayerTrend(p.perMatchStats))}</span>
                     </div>
                   </div>
 

@@ -15,9 +15,10 @@ import { renderFantasy }     from './pages/fantasy.js';
 import { renderLeaderboard } from './pages/leaderboard.js';
 import { renderPlayers }     from './pages/players.js';
 import { renderMatch }       from './pages/match.js';
+import { renderTeams }       from './pages/teams.js';
 
 // App state store
-let store = { matches: [], players: {}, teams: {}, finalsStandings: [], loadedCount: 0, totalCount: 36 };
+let store = { matches: [], players: {}, teams: {}, finalsStandings: [], roster: { teams: [], players: [] }, schedule: { days: [] }, loadedCount: 0, totalCount: 36 };
 let dataLoaded = false;
 
 // Router setup
@@ -56,7 +57,9 @@ router
   .on('/fantasy',     guard((p) => withData(() => renderFantasy(store, router), p)))
   .on('/leaderboard', guard((p) => withData(() => renderLeaderboard(store, router), p)))
   .on('/players',     guard((p) => withData(() => renderPlayers(store, router, {}), p)))
-  .on('/player/:uid', guard((p) => withData((params) => renderPlayers(store, router, params), p)));
+  .on('/player/:uid', guard((p) => withData((params) => renderPlayers(store, router, params), p)))
+  .on('/teams',       guard((p) => withData(() => renderTeams(store, router, {}), p)))
+  .on('/team/:id',    guard((p) => withData((params) => renderTeams(store, router, params), p)));
 
 // Top Navigation Bar Setup
 function setupNav() {

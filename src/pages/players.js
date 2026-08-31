@@ -3,9 +3,10 @@
  * Styled to match Stitch "Player Profile (Desktop)"
  * Team Logo Integration & Power Scores
  */
-import { renderPage, setActiveNav, fmt, fmtPower, fmtTime, ordinal, placementColor } from '../ui.js';
+import { renderPage, setActiveNav, fmt, fmtPower, fmtTime, ordinal, placementColor, renderTrendBadge } from '../ui.js';
 import { getSession } from '../state.js';
 import { renderTeamLogoBadge } from '../data/teamLogos.js';
+import { computePlayerTrend } from '../data/loader.js';
 
 export function renderPlayers(store, router, params = {}) {
   setActiveNav('players');
@@ -147,9 +148,10 @@ function renderPlayerProfile(player, router) {
     return a.game - b.game;
   });
 
-  const bestPower = Math.max(...player.perMatchStats.map(m => m.power));
-  const bestKills = Math.max(...player.perMatchStats.map(m => m.eliminations));
-  const bestDmg = Math.max(...player.perMatchStats.map(m => m.damage));
+  const bestPower = perMatch.length ? Math.max(...perMatch.map(m => m.power)) : 0;
+  const bestKills = perMatch.length ? Math.max(...perMatch.map(m => m.eliminations)) : 0;
+  const bestDmg = perMatch.length ? Math.max(...perMatch.map(m => m.damage)) : 0;
+  const trend = computePlayerTrend(perMatch);
 
   renderPage(`
     <div class="flex flex-col gap-6 pb-12">
@@ -174,7 +176,7 @@ function renderPlayerProfile(player, router) {
 
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full md:w-auto">
           <div class="hud-card p-3 text-center bg-[#0E0E0F] min-w-[100px]">
-            <div class="font-headline font-bold text-primary text-xl">${fmtPower(player.avgPower)}</div>
+            <div class="font-headline font-bold text-primary text-xl flex items-center justify-center gap-1">${fmtPower(player.avgPower)} ${renderTrendBadge(trend)}</div>
             <div class="font-label text-[9px] text-outline uppercase">POWER SCORE</div>
           </div>
           <div class="hud-card p-3 text-center bg-[#0E0E0F] min-w-[100px]">

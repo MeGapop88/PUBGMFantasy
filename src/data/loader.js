@@ -1,27 +1,10 @@
 /**
  * DATA LOADER
- * Loads all 36 PMGO JSON match files from /public/data/
+ * Takes a roster + schedule + raw match payloads (sourced from data/api.js)
+ * and builds Finals Tournament Standings & player/team aggregates.
  * Computes official PUBG Mobile placement points & Player Power Scores.
- * Builds Finals Tournament Standings & player/team aggregates.
  */
-
-// All 36 match files
-const MATCH_FILES = [
-  // Finals
-  'Finals D1 G1.json', 'Finals D1 G2.json', 'Finals D1 G3.json',
-  'Finals D1 G4.json', 'Finals D1 G5.json', 'Finals D1 G6.json',
-  'Finals D2 G1.json', 'Finals D2 G2.json', 'Finals D2 G3.json',
-  'Finals D2 G4.json', 'Finals D2 G5.json', 'Finals D2 G6.json',
-  'Finals D3 G1.json', 'Finals D3 G2.json', 'Finals D3 G3.json',
-  'Finals D3 G4.json', 'Finals D3 G5.json', 'Finals D3 G6.json',
-  // League
-  'League D1 G1.json', 'League D1 G2.json', 'League D1 G3.json',
-  'League D1 G4.json', 'League D1 G5.json', 'League D1 G6.json',
-  'League D2 G1.json', 'League D2 G2.json', 'League D2 G3.json',
-  'League D2 G4.json', 'League D2 G5.json', 'League D2 G6.json',
-  'League D3 G1.json', 'League D3 G2.json', 'League D3 G3.json',
-  'League D3 G4.json', 'League D3 G5.json', 'League D3 G6.json',
-];
+import { getRoster, getSchedule, getMatchRaw } from './api.js';
 
 // Official PUBG Mobile Placement Points Lookup
 export const OFFICIAL_PLACEMENT_PTS = {
@@ -35,33 +18,6 @@ export const OFFICIAL_PLACEMENT_PTS = {
   8: 1,
   9: 0, 10: 0, 11: 0, 12: 0, 13: 0, 14: 0, 15: 0, 16: 0
 };
-
-/**
- * Parses a filename into match metadata.
- * "Finals D2 G3.json" → { phase: 'Finals', day: 2, game: 3, id: 'Finals_D2_G3' }
- */
-function parseFilename(filename) {
-  const name = filename.replace('.json', '');
-  const parts = name.split(' ');
-  const phase = parts[0]; // 'Finals' | 'League'
-  const day = parseInt(parts[1].replace('D', ''), 10);
-  const game = parseInt(parts[2].replace('G', ''), 10);
-  return { phase, day, game, id: `${phase}_D${day}_G${game}`, filename };
-}
-
-/**
- * Loads a single match JSON file.
- */
-async function loadMatchFile(filename) {
-  try {
-    const resp = await fetch(`/data/${encodeURIComponent(filename)}`);
-    if (!resp.ok) return null;
-    const data = await resp.json();
-    return data;
-  } catch {
-    return null;
-  }
-}
 
 /**
  * Calculates a player's Power Score for a single match
@@ -78,11 +34,27 @@ export function calculateMatchPower(p) {
 }
 
 /**
- * Processes raw JSON into a structured match object.
+ * Processes raw JSON into a structured match object. When `raw` is null
+ * (match not played yet — see api.getMatchRaw), returns a stub match with
+ * zeroed-out counts and hasResults: false, so unplayed matches still show up
+ * in schedules/predictions instead of silently disappearing.
  */
 function processMatch(meta, raw) {
-  const players = raw[0]?.allinfo?.TotalPlayerList ?? [];
-  if (players.length === 0) return null;
+  const players = raw ? (raw[0]?.allinfo?.TotalPlayerList ?? []) : [];
+  if (players.length === 0) {
+    return {
+      ...meta,
+      players: [],
+      teams: [],
+      playerCount: 0,
+      teamCount: 0,
+      winner: null,
+      topKiller: null,
+      topDamage: null,
+      topPower: null,
+      hasResults: false,
+    };
+  }
 
   // Build player rows with normalized field names
   const playerRows = players.map(p => {
@@ -145,17 +117,35 @@ function processMatch(meta, raw) {
     topKiller: [...playerRows].sort((a, b) => b.eliminations - a.eliminations)[0] ?? null,
     topDamage: [...playerRows].sort((a, b) => b.damage - a.damage)[0] ?? null,
     topPower:  [...playerRows].sort((a, b) => b.power - a.power)[0] ?? null,
+    hasResults: true,
   };
 }
 
 /**
  * Builds overall Finals Tournament Standings across all 18 Finals matches.
+ * Pre-seeded from the roster so every team gets a row (all zeros) even
+ * before any Finals matches have been played.
  */
-export function computeFinalsStandings(matches) {
-  const finalsMatches = matches.filter(m => m.phase === 'Finals');
-  const targetMatches = finalsMatches.length > 0 ? finalsMatches : matches;
+export function computeFinalsStandings(roster, matches) {
+  const finalsMatches = matches.filter(m => m.phase === 'Finals' && m.hasResults);
+  const targetMatches = finalsMatches.length > 0 ? finalsMatches : matches.filter(m => m.hasResults);
 
   const teamTotals = {};
+
+  (roster?.teams ?? []).forEach(t => {
+    teamTotals[t.teamName] = {
+      teamId:        t.teamId,
+      teamName:      t.teamName,
+      matchesPlayed: 0,
+      wins:          0,
+      top3:          0,
+      totalKills:    0,
+      totalPlacePts: 0,
+      totalDamage:   0,
+      totalPoints:   0,
+      placements:    [],
+    };
+  });
 
   targetMatches.forEach(match => {
     match.teams.forEach(t => {
@@ -189,7 +179,8 @@ export function computeFinalsStandings(matches) {
     if (b.totalPoints !== a.totalPoints) return b.totalPoints - a.totalPoints;
     if (b.wins !== a.wins) return b.wins - a.wins;
     if (b.totalKills !== a.totalKills) return b.totalKills - a.totalKills;
-    return a.totalDamage - b.totalDamage;
+    if (a.totalDamage !== b.totalDamage) return a.totalDamage - b.totalDamage;
+    return a.teamName.localeCompare(b.teamName);
   });
 
   return sorted.map((t, idx) => ({
@@ -201,14 +192,36 @@ export function computeFinalsStandings(matches) {
 }
 
 /**
- * Builds per-player aggregate across all matches.
+ * Builds per-player aggregate across all matches. Pre-seeded from the roster
+ * so a player who hasn't played any matches yet still appears with every
+ * stat defaulted to 0, instead of not existing at all.
  */
-function buildPlayerRegistry(matches) {
+function buildPlayerRegistry(roster, matches) {
   const registry = {};
+
+  (roster?.players ?? []).forEach(p => {
+    registry[p.uId] = {
+      uId:               p.uId,
+      playerName:        p.playerName,
+      teamId:            p.teamId,
+      teamName:          p.teamName,
+      matchesPlayed:     0,
+      totalEliminations: 0,
+      totalDamage:       0,
+      totalKnockdowns:   0,
+      totalSurvivalTime: 0,
+      totalHeadShots:    0,
+      totalAssists:      0,
+      totalHeal:         0,
+      totalPower:        0,
+      perMatchStats:     [],
+    };
+  });
 
   matches.forEach(match => {
     match.players.forEach(p => {
       if (!registry[p.uId]) {
+        console.warn(`Player ${p.uId} (${p.playerName}) played a match but is missing from the roster.`);
         registry[p.uId] = {
           uId:               p.uId,
           playerName:        p.playerName,
@@ -267,10 +280,26 @@ function buildPlayerRegistry(matches) {
 }
 
 /**
- * Builds per-team aggregate across all matches.
+ * Builds per-team aggregate across all matches. Pre-seeded from the roster
+ * so every team has a row (all zeros) even before playing a match.
  */
-function buildTeamRegistry(matches) {
+function buildTeamRegistry(roster, matches) {
   const registry = {};
+
+  (roster?.teams ?? []).forEach(t => {
+    registry[t.teamId] = {
+      teamId:        t.teamId,
+      teamName:      t.teamName,
+      matchesPlayed: 0,
+      wins:          0,
+      top3:          0,
+      totalKills:    0,
+      totalDamage:   0,
+      totalPlacePts: 0,
+      totalPoints:   0,
+      placements:    [],
+    };
+  });
 
   matches.forEach(match => {
     match.teams.forEach(t => {
@@ -309,25 +338,54 @@ function buildTeamRegistry(matches) {
 }
 
 /**
- * Main loader — loads all available matches.
+ * Parses a matchId like "Finals_D2_G3" into { phase, day, game, id }.
+ */
+function parseMatchId(id) {
+  const [phase, dPart, gPart] = id.split('_');
+  return { phase, day: parseInt(dPart.replace('D', ''), 10), game: parseInt(gPart.replace('G', ''), 10), id };
+}
+
+/**
+ * Computes whether a player's most recent match power is trending up or
+ * down relative to their rolling average of everything before it.
+ * Returns null when there isn't enough history (0-1 matches) to judge a
+ * trend, or when the change is too small (<5%) to call either direction.
+ */
+export function computePlayerTrend(perMatchStatsChronological) {
+  if (!perMatchStatsChronological || perMatchStatsChronological.length < 2) return null;
+  const last = perMatchStatsChronological[perMatchStatsChronological.length - 1];
+  const prior = perMatchStatsChronological.slice(0, -1);
+  const priorAvg = prior.reduce((s, m) => s + m.power, 0) / prior.length;
+  if (priorAvg === 0) return null;
+  const pctChange = (last.power - priorAvg) / priorAvg;
+  if (Math.abs(pctChange) < 0.05) return 'flat';
+  return pctChange > 0 ? 'up' : 'down';
+}
+
+/**
+ * Main loader — fetches the roster + schedule, then every match's raw
+ * telemetry (or a stub if unplayed), and builds all aggregates from them.
  */
 export async function loadAllMatches(onProgress) {
+  const roster = await getRoster();
+  const schedule = await getSchedule();
+  const matchIds = schedule.days.flatMap(d => d.matchIds);
+
   const results = [];
   let loaded = 0;
 
   const batchSize = 6;
-  for (let i = 0; i < MATCH_FILES.length; i += batchSize) {
-    const batch = MATCH_FILES.slice(i, i + batchSize);
-    const batchResults = await Promise.all(batch.map(async filename => {
-      const meta = parseFilename(filename);
-      const raw = await loadMatchFile(filename);
-      if (!raw) return null;
+  for (let i = 0; i < matchIds.length; i += batchSize) {
+    const batch = matchIds.slice(i, i + batchSize);
+    const batchResults = await Promise.all(batch.map(async matchId => {
+      const meta = parseMatchId(matchId);
+      const raw = await getMatchRaw(matchId);
       const match = processMatch(meta, raw);
       loaded++;
-      onProgress && onProgress(loaded, MATCH_FILES.length);
+      onProgress && onProgress(loaded, matchIds.length);
       return match;
     }));
-    results.push(...batchResults.filter(Boolean));
+    results.push(...batchResults);
   }
 
   const sortedMatches = results.sort((a, b) => {
@@ -336,16 +394,18 @@ export async function loadAllMatches(onProgress) {
     return a.game - b.game;
   });
 
-  const playerRegistry = buildPlayerRegistry(sortedMatches);
-  const teamRegistry   = buildTeamRegistry(sortedMatches);
-  const finalsStandings = computeFinalsStandings(sortedMatches);
+  const playerRegistry = buildPlayerRegistry(roster, sortedMatches);
+  const teamRegistry   = buildTeamRegistry(roster, sortedMatches);
+  const finalsStandings = computeFinalsStandings(roster, sortedMatches);
 
   return {
     matches: sortedMatches,
     players: playerRegistry,
     teams:   teamRegistry,
     finalsStandings,
+    roster,
+    schedule,
     loadedCount: sortedMatches.length,
-    totalCount:  MATCH_FILES.length,
+    totalCount:  matchIds.length,
   };
 }

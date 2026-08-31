@@ -56,6 +56,10 @@ The **PMGO Tactical Platform** allows users to:
 - Operative search & team filter grid.
 - Detailed dossier view for each player with career averages (*Avg Kills*, *Avg Damage*, *Avg MVP Rate*, *Avg Survival Time*, *Headshot Count*), best performance highlights, and a full match-by-match telemetry table.
 
+### 6. 🛡️ Teams (`/teams`, `/team/:id`)
+- Grid of all participating teams with aggregate stats — roster-seeded, so every team appears (at all-zero stats) even before the tournament starts.
+- Per-team profile with a roster grid of that team's players, linking through to each player's dossier.
+
 ---
 
 ## 🛠️ Architecture & Tech Stack
@@ -65,9 +69,10 @@ The **PMGO Tactical Platform** allows users to:
 | **Core Framework** | **Vite v8 + Vanilla JS (ES Modules)** | Fast, lightweight Single Page Application (SPA) without framework overhead. |
 | **Styling & HUD** | **Tailwind CSS + Custom CSS** | Utility-first CSS combined with tactical HUD CSS tokens (`src/css/design-system.css`). |
 | **Icons & Fonts** | **Google Material Symbols Outlined** <br/> **Archivo Narrow** (Headlines) <br/> **Geist** (Body/Labels/Mono-Stats) | High-contrast military/esports typography and vector icon set. |
-| **Routing** | **Hash Router (`src/router.js`)** | Zero-dependency hash-based client routing (`#/dashboard`, `#/predictions`, `#/fantasy`, `#/leaderboard`, `#/players`, `#/player/:uid`). |
+| **Routing** | **Hash Router (`src/router.js`)** | Zero-dependency hash-based client routing (`#/dashboard`, `#/predictions`, `#/fantasy`, `#/leaderboard`, `#/players`, `#/player/:uid`, `#/teams`, `#/team/:id`). |
 | **Persistence & Auth** | **HTML5 LocalStorage (`src/state.js`)** | User registration/login, saved match predictions, fantasy squad selections, and scored leaderboards. |
 | **Team Logos Data** | **Logos Registry (`src/data/teamLogos.js`)** | Team logo badge generator & mapped branding for all 16 PMGO teams. |
+| **Data Adapter** | **`src/data/api.js`** | The single seam between the app and its data source — see [Backend Integration Contract](#-backend-integration-contract) below. |
 
 ---
 
@@ -137,6 +142,21 @@ Each match JSON file contains an array wrapper with an `allinfo.TotalPlayerList`
 - `THE HUNTERS`
 - `Team Vision`
 - `iKURD ESPORTS`
+
+---
+
+## 🔌 Backend Integration Contract
+
+`src/data/api.js` is the **only** module in the app that knows where data comes from — every page and `src/data/loader.js` consume normalized data through it. It's currently a placeholder backed by two static JSON files; wiring in the production team's real MongoDB-backed API means editing `api.js` only, nothing downstream:
+
+| Function | Contract | Mock implementation today |
+|---|---|---|
+| `getRoster()` | `{ teams: TeamRosterEntry[], players: PlayerRosterEntry[] }` — canonical list of every team/player in the tournament, **independent of matches played**. This is what makes teams/players display with all-zero stats before the tournament starts. | Fetches `public/data/roster.json`. |
+| `getSchedule()` | `{ days: DayEntry[] }` — one entry per tournament day, each with `opensAt`/`locksAt` ISO timestamps and its `matchIds`. Drives the Predictions page's day-gating (exactly one day open for picks at a time). | Fetches `public/data/schedule.json`. |
+| `getMatchRaw(matchId)` | Raw Shadow Tracker telemetry for one match, or `null` if it hasn't been played yet (a legitimate state, not an error). | Fetches `public/data/{Phase} D{n} G{n}.json`. |
+| `getPlayerPhotoUrl(uId)` / `getTeamLogoUrl(teamId)` | Asset-server photo/logo URL by id, or `null` if unavailable (callers render an initials fallback). | Currently returns `null` (player photos) or falls through to the static `teamLogos.js` registry (team logos). |
+
+`roster.json` and `schedule.json` are **mock/dev-only** stand-ins (regenerable via `node scripts/build-roster.mjs`, which derives them from the existing 36 match files) for the roster + schedule collections the real API should serve.
 
 ---
 
@@ -215,8 +235,10 @@ PUBGM Fantasy and Predict/
 ├── package.json                # Dependencies & Vite scripts
 ├── vite.config.js              # Vite configuration (ignores watching data dir)
 ├── README.md                   # Project documentation
+├── scripts/
+│   └── build-roster.mjs        # Regenerates roster.json/schedule.json from the match files
 ├── public/
-│   └── data/                   # Directory for 36 PMGO match JSON files
+│   └── data/                   # 36 PMGO match JSON files + roster.json + schedule.json
 └── src/
     ├── main.js                 # Entry point: Router, auth sync & data boot
     ├── router.js               # Hash SPA router
@@ -226,15 +248,18 @@ PUBGM Fantasy and Predict/
     │   ├── design-system.css   # Custom CSS tokens & Stitch HUD animations
     │   └── app.css             # Component CSS styles & data tables
     ├── data/
-    │   ├── loader.js           # Telemetry parser, MVP engine & aggregate builder
+    │   ├── api.js              # Data source adapter — see Backend Integration Contract
+    │   ├── schedule.js         # Pure day/lock-status helpers for Predictions
+    │   ├── loader.js           # Telemetry parser, Power Score engine & aggregate builder
     │   └── teamLogos.js        # Mapped team logos & badge generator
     └── pages/
         ├── login.js            # Authentication page (Login / Register tabs)
         ├── dashboard.js        # Tournament Dashboard & Game Telemetry Leaderboard
-        ├── predictions.js      # Dual-pane Match Predictor interface
+        ├── predictions.js      # Day-gated, deadline-locked Match Predictor interface
         ├── fantasy.js          # Active Squad deployment & Draft Builder
         ├── leaderboard.js      # Combined Fantasy & Predictor standings
-        └── players.js          # Operative roster grid & detailed dossiers
+        ├── players.js          # Operative roster grid & detailed dossiers
+        └── teams.js            # Participant teams grid & per-team roster profile
 ```
 
 ---
