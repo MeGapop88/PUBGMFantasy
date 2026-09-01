@@ -1,303 +1,260 @@
-# PUBG Mobile Global Open (PMGO) — Tactical Fantasy & Match Predictions Platform
+# PMGO Arena
 
-> A high-performance, single-page web application designed for competitive PUBG Mobile esports analysts and players. Ingests raw match spectator telemetry (Shadow Tracker JSON format), computes official tournament placement points and player MVP rates, and delivers an immersive **Tactical Protocol / Military HUD** interface modeled after the Google Stitch *"Ignite Tournament Interface"* design system.
+Fantasy squads and match predictions for the PUBG Mobile Global Open.
 
----
+Ingests raw Shadow Tracker spectator telemetry, computes official tournament
+placement points and per-player Power Scores, and serves them through a
+military-HUD interface — the **Tactical Protocol** design system.
 
-## 📋 Table of Contents
+Draft four operatives from the roster, no more than two from any one team, and
+score them on combined Power Score. Call one team per game and bank points on
+where they actually finished. Both boards are scored from the same telemetry the
+standings are built on — nothing is entered by hand.
 
-- [Overview](#-overview)
-- [Key Features](#-key-features)
-- [Architecture & Tech Stack](#-architecture--tech-stack)
-- [Data Model & Telemetry Ingestion](#-data-model--telemetry-ingestion)
-- [Scoring Engine & Formulas](#-scoring-engine--formulas)
-- [Design System & UI Specs](#-design-system--ui-specs)
-- [Project Directory Structure](#-project-directory-structure)
-- [Setup & Usage Guide](#-setup--usage-guide)
+Built with Next.js 15 (App Router), React 19, Prisma 6 and Tailwind v4.
 
 ---
 
-## 🎯 Overview
+## Quick start
 
-The **PMGO Tactical Platform** allows users to:
-1. **Track Live & Historic Game Telemetry**: View official 16-team match leaderboards with PUBG Mobile esports point breakdowns.
-2. **Make Tactical Match Predictions**: Predict 1st place match winners with a reward decay curve across 1st–5th places.
-3. **Build & Deploy Fantasy Squads**: Draft 4-operative rosters adhering to a **max 2 per real team** constraint, scored by aggregate player MVP rates.
-4. **Inspect Player Dossiers**: Dive into individual player performance analytics, lifetime averages, best game highlights, and per-match telemetry tables.
-
----
-
-## ⚡ Key Features
-
-### 1. 🏆 Tournament Command Center (`/dashboard`)
-- **Featured Telemetry Hero Banner**: Live stage indicators, 36-game telemetry overview, total kills counter, top MVP leader callout, and scanline HUD overlays.
-- **Match Result Detail & Game Leaderboard**:
-  - Interactive game switcher carousel (`D1 G1` through `D3 G6`).
-  - **8-Column Official Match Standings**: Ranks 1 to 16 displaying Team Logos, Total Kills, Placement Points (`+10`, `+6`, `+5`, etc.), and Total Match Points (`Kill Points + Placement Points`).
-  - **Top 3 Inset Glow Highlight**: Distinct `#FF6B00` Electric Orange inner glow styling for podium finishes.
-  - **Match Prediction Payout Widget**: Evaluates saved user picks against actual game results with a visual 5-bar reward decay chart.
-- **Match Telemetry Grid**: Full tournament grid grouped by stage (*League Phase* vs. *Finals Phase*) and days.
-
-### 2. 🎯 Tactical Match Predictor (`/predictions`)
-- **Dual-Pane Tactical Interface** (matching Stitch `Match Prediction (Desktop)`):
-  - **Left Pane**: List of all 16 participating teams with official team logos, finish placement, kill counts, and potential payout values.
-  - **Right Pane**: Selected team telemetry card, actual match finish, points earned callout, reward decay curve reference, and **"LOCK IN PREDICTION"** action button.
-
-### 3. 🛡️ Fantasy Squad Dock & Roster Management (`/fantasy`)
-- **Dual-View Mode** (matching Stitch `My Team - Active (Desktop)` and `Fantasy Draft (Desktop)`):
-  - **Active Deployment View**: 4 vertical trading cards featuring desaturated player portraits, team logos, role badges (*In-Game Leader*, *Entry Fragger*, *Support*, *Flex*), slot badges (`01`–`04`), and 4-stat telemetry grids (*MVP Rate*, *K/D Ratio*, *Avg Kills*, *Avg Damage*).
-  - **Draft Builder View**: Filterable player pool grid (`h-64` cards), team filter dropdown, search bar, MVP rate badges, 4-slot roster dock with real-time aggregate MVP counter, and strict **2-per-team cap validation**.
-
-### 4. 🥇 Leaderboards (`/leaderboard`)
-- **Fantasy Squad Rankings**: Ranks user squads by combined 4-player MVP rates, showing player roster chips and team logos.
-- **Predictor Standings**: Ranks user predictors by total prediction points earned and perfect 10-point picks.
-
-### 5. 🪪 Player Roster & Dossiers (`/players`)
-- Operative search & team filter grid.
-- Detailed dossier view for each player with career averages (*Avg Kills*, *Avg Damage*, *Avg MVP Rate*, *Avg Survival Time*, *Headshot Count*), best performance highlights, and a full match-by-match telemetry table.
-
-### 6. 🛡️ Teams (`/teams`, `/team/:id`)
-- Grid of all participating teams with aggregate stats — roster-seeded, so every team appears (at all-zero stats) even before the tournament starts.
-- Per-team profile with a roster grid of that team's players, linking through to each player's dossier.
-
----
-
-## 🛠️ Architecture & Tech Stack
-
-| Component | Technology / Library | Description |
-|---|---|---|
-| **Core Framework** | **Vite v8 + Vanilla JS (ES Modules)** | Fast, lightweight Single Page Application (SPA) without framework overhead. |
-| **Styling & HUD** | **Tailwind CSS + Custom CSS** | Utility-first CSS combined with tactical HUD CSS tokens (`src/css/design-system.css`). |
-| **Icons & Fonts** | **Google Material Symbols Outlined** <br/> **Archivo Narrow** (Headlines) <br/> **Geist** (Body/Labels/Mono-Stats) | High-contrast military/esports typography and vector icon set. |
-| **Routing** | **Hash Router (`src/router.js`)** | Zero-dependency hash-based client routing (`#/dashboard`, `#/predictions`, `#/fantasy`, `#/leaderboard`, `#/players`, `#/player/:uid`, `#/teams`, `#/team/:id`). |
-| **Persistence & Auth** | **HTML5 LocalStorage (`src/state.js`)** | User registration/login, saved match predictions, fantasy squad selections, and scored leaderboards. |
-| **Team Logos Data** | **Logos Registry (`src/data/teamLogos.js`)** | Team logo badge generator & mapped branding for all 16 PMGO teams. |
-| **Data Adapter** | **`src/data/api.js`** | The single seam between the app and its data source — see [Backend Integration Contract](#-backend-integration-contract) below. |
-
----
-
-## 📊 Data Model & Telemetry Ingestion
-
-### Source Data Format
-The platform ingests raw spectator JSON files exported from **PUBG Mobile Shadow Tracker**.
-
-### File Naming Convention
-Files must be placed in `public/data/` and adhere to the following naming structure:
+```bash
+npm install
+cp .env.example .env      # then paste your Postgres connection string in
+npx prisma db push        # create the tables
+npm run seed              # 36 matches, 2304 stat rows, 10 demo users
+npm run dev               # http://localhost:3000
 ```
-public/data/
-├── Finals D1 G1.json
-├── Finals D1 G2.json
-├── ...
-├── Finals D3 G6.json
-├── League D1 G1.json
-├── ...
-└── League D3 G6.json
-```
-*(Total of 36 match JSON files: 18 League matches + 18 Finals matches).*
 
-### JSON Telemetry Schema (`allinfo.TotalPlayerList`)
-Each match JSON file contains an array wrapper with an `allinfo.TotalPlayerList` array containing 64 player object entries:
+Sign in with any seeded account — they all share one access code:
+
+| Callsign | Email | Access code |
+| --- | --- | --- |
+| `Recon-01` | `recon01@pmgo.local` | `tactical123` |
+
+The other nine follow the same pattern — `overwatch@`, `dropshot@`,
+`killfeed@`, `zonecaller@`, `blueline@`, `thirdparty@`, `proneandy@`,
+`lootgoblin@` and `botlobby@`, all `@pmgo.local` on the same code. Each has a
+squad and picks, so both leaderboards are populated on first load.
+
+Login is **email + access code**; the callsign is the display name shown on the
+navbar and both leaderboards, and is collected once at registration.
+
+`npm run seed` clears the tournament and user tables before writing. Do not run
+it against a database holding real data.
+
+---
+
+## Scoring
+
+All four formulas live in `lib/scoring.ts`. It is pure — no imports, no I/O —
+and it is the only place points are computed. `lib/scoring.test.ts` covers the
+table boundaries, the squad rules and the trend threshold.
+
+**Team match points** — placement by finish, plus one point per kill.
+
+| Finish | 1st | 2nd | 3rd | 4th | 5th | 6th | 7th | 8th | 9th–16th |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Points | 10 | 6 | 5 | 4 | 3 | 2 | 1 | 1 | 0 |
+
+**Player Power Score** — an absolute figure per match, precomputed at seed time.
+
+```
+kills × 12  ·  knockouts × 4  ·  damage × 0.08  ·  survival minutes × 1.5
+```
+
+Unlike an MVP *share*, it doesn't depend on what the other 63 players did, so a
+score is comparable across matches and a squad total is just a sum.
+
+**Prediction payout** — by where the team you picked actually finished. One
+locked pick per game; calling an outright winner is worth ten times a
+fifth-place hedge.
+
+| Finish | 1st | 2nd | 3rd | 4th | 5th | 6th–16th |
+| --- | --- | --- | --- | --- | --- | --- |
+| Payout | 10 | 8 | 5 | 3 | 1 | 0 |
+
+**Squad rules** — exactly 4 operatives, all distinct, at most 2 from any one
+team. `validateSquad()` is called twice on purpose: in the draft grid to disable
+a capped card, and in the server action to enforce it against a request that
+never went through that grid.
+
+---
+
+## Routes
+
+| Route | What it does |
+| --- | --- |
+| `/login` | Sign in / register a callsign |
+| `/dashboard` | Tournament command: hero telemetry, 2×8 standings, phase-filtered match grid |
+| `/match/[key]` | One game's official standings, expandable per-team rosters, prediction payout |
+| `/predictions` | Day-gated predictor: one open day at a time, decay curve, lock-in |
+| `/fantasy` | Draft four operatives against the 2-per-team cap; active squad view |
+| `/leaderboard` | Fantasy squad and predictor standings |
+| `/teams`, `/teams/[id]` | Participating teams and their rosters |
+| `/players`, `/players/[uid]` | Operative registry and per-player dossier |
+
+Everything under `app/(app)` is behind a session guard.
+
+**Comparison** — pick two with the ⇄ toggle on any team or operative card and the
+tray at the bottom opens a side-by-side breakdown. Teams compare on `/teams`,
+operatives on `/players`, `/teams/[id]` and the fantasy draft. Built on a native
+`<dialog>`, so Escape, the top layer and focus containment come from the
+platform; it slides up as a drawer at every width, capped to a readable column
+on wide screens.
+
+---
+
+## Architecture
+
+Server Components read Prisma directly; writes go through Server Actions. There
+is no REST layer to keep in sync.
+
+```
+app/
+  (app)/          authenticated routes; layout.tsx carries the session guard
+  login/          public
+components/       presentation, split by feature
+lib/
+  scoring.ts      pure scoring — the only place points are computed
+  scoring.test.ts
+  queries.ts      all server reads
+  actions.ts      register, login, lockPrediction, saveSquad
+  session.ts      opaque DB-backed sessions
+  schedule.ts     pure day/lock status helpers
+  teams.ts        the 16 teams' branding
+  format.ts       display formatters
+  db.ts           Prisma singleton
+prisma/
+  schema.prisma
+  seed.ts         rebuilds the tournament from public/data
+public/data/      36 Shadow Tracker match files + roster.json — the seed source
+```
+
+**Auth** is hand-rolled rather than Auth.js: an opaque session id in an httpOnly
+cookie, backed by a `Session` row, with bcrypt hashes. Revocation is a DELETE,
+and there is no signing key to rotate. This also avoids running Prisma inside
+edge middleware, which the Auth.js middleware pattern would require.
+
+**Three precomputations** are written at seed time so no request recomputes
+them: `PlayerStat.power`, the whole `TeamResult` table (which turns the
+dashboard's hottest read into one indexed query), and `Match.order`.
+
+**`Match.order`** is 0–35 in true tournament order, League D1 G1 → Finals D3 G6.
+Every read that cares about chronology sorts by it. Sorting by `phase` name puts
+`"Finals"` before `"League"`, which reverses each player's match history and
+points the form-trend arrows at the wrong game.
+
+**Deadlines are enforced server-side.** `lockPrediction` re-derives the day's
+status from its `ScheduleDay` row before accepting a pick. What the client
+believes about the window is presentation only.
+
+---
+
+## Database portability
+
+The schema validates unchanged under `postgresql`, `sqlite` and `mongodb` —
+change `provider` in `prisma/schema.prisma` and point `DATABASE_URL` at the new
+database. Two rules keep it that way:
+
+1. Every `@id` carries `@map("_id")` — MongoDB requires it, the others ignore it.
+2. Ids are `cuid()` strings, never `autoincrement()` (unsupported on MongoDB)
+   and never `@db.ObjectId` (which SQLite cannot express).
+
+`npm run db:check-mongo` validates a MongoDB copy of the schema to keep this
+honest. Run it before touching the schema.
+
+---
+
+## Telemetry format
+
+Each of the 36 files in `public/data/` wraps an `allinfo.TotalPlayerList` array
+of 64 player objects:
 
 ```json
-[{
-  "allinfo": {
-    "TotalPlayerList": [
-      {
-        "uId": 5227970312,
-        "playerName": "ngxKOOPS02",
-        "playerOpenId": "13697172143211816",
-        "teamId": 7,
-        "teamName": "Nigma Galaxy",
-        "rank": 1,
-        "killNum": 6,
-        "damage": 998,
-        "heal": 166,
-        "survivalTime": 1636,
-        "knockouts": 4,
-        "assists": 1,
-        "headShotNum": 1,
-        "maxKillDistance": 158,
-        "driveDistance": 8232,
-        "marchDistance": 2606
-      }
-    ]
-  }
-}]
+[{ "allinfo": { "TotalPlayerList": [
+  { "uId": 5227970312, "playerName": "ngxKOOPS02", "teamId": 7,
+    "teamName": "Nigma Galaxy", "rank": 1, "killNum": 6, "damage": 998,
+    "heal": 166, "survivalTime": 1636, "knockouts": 4, "assists": 1,
+    "headShotNum": 1, "maxKillDistance": 158, "driveDistance": 8232,
+    "marchDistance": 2606 }
+] } }]
 ```
 
-### Registered Teams (16 Official PMGO Teams)
-- `721 ESPORTS`
-- `7C ESPORTS`
-- `ALULA Esports`
-- `CB9 Esports`
-- `DAT ALREMAL`
-- `ETSH ESPORTS`
-- `FOUR WIZ`
-- `Geekay Esports`
-- `KHK Esports`
-- `MASTER TEAM`
-- `Nigma Galaxy`
-- `R8 ESPORTS`
-- `RA'AD`
-- `THE HUNTERS`
-- `Team Vision`
-- `iKURD ESPORTS`
+Files are named `{Phase} D{day} G{game}.json` — `League D1 G1` through
+`Finals D3 G6`. Swapping in real exports means changing what `prisma/seed.ts`
+reads, not the schema.
+
+### Artwork
+
+`npm run assets` downloads team logos, team flags and player headshots from
+[Capex11/PUBG-stats-website](https://github.com/Capex11/PUBG-stats-website) —
+the same tournament, keyed by the exact names in the telemetry — into
+`public/logos`, `public/flags` and `public/players`, and writes
+`public/data/assets.json` for the seed to read. About 730 KB for 109 images.
+
+Two operatives have no headshot (`RAADōLabubu`, `mstrMORSHē` — their names carry
+macrons the source exporter could not resolve); those cards fall back to an
+initials watermark. Three teams come back with a neutral grey where the source's
+colour extraction failed, so the script keeps the existing brand colours for
+DAT ALREMAL, ETSH ESPORTS and FOUR WIZ.
+
+The seed runs without any of it — teams then use derived initials and players
+have no photo.
+
+`roster.json` is the canonical team/player list, independent of matches played —
+it's what lets teams and players render with all-zero stats before a tournament
+starts. Regenerate it with `node scripts/build-roster.mjs` after changing the
+match files.
 
 ---
 
-## 🔌 Backend Integration Contract
+## Deploying to Vercel
 
-`src/data/api.js` is the **only** module in the app that knows where data comes from — every page and `src/data/loader.js` consume normalized data through it. It's currently a placeholder backed by two static JSON files; wiring in the production team's real MongoDB-backed API means editing `api.js` only, nothing downstream:
+The datasource is `postgresql`. Import the repo, add a Neon database from the
+project's **Storage** tab and connect it to all three environments — that
+injects `DATABASE_URL`. Then create the tables and seed:
 
-| Function | Contract | Mock implementation today |
-|---|---|---|
-| `getRoster()` | `{ teams: TeamRosterEntry[], players: PlayerRosterEntry[] }` — canonical list of every team/player in the tournament, **independent of matches played**. This is what makes teams/players display with all-zero stats before the tournament starts. | Fetches `public/data/roster.json`. |
-| `getSchedule()` | `{ days: DayEntry[] }` — one entry per tournament day, each with `opensAt`/`locksAt` ISO timestamps and its `matchIds`. Drives the Predictions page's day-gating (exactly one day open for picks at a time). | Fetches `public/data/schedule.json`. |
-| `getMatchRaw(matchId)` | Raw Shadow Tracker telemetry for one match, or `null` if it hasn't been played yet (a legitimate state, not an error). | Fetches `public/data/{Phase} D{n} G{n}.json`. |
-| `getPlayerPhotoUrl(uId)` / `getTeamLogoUrl(teamId)` | Asset-server photo/logo URL by id, or `null` if unavailable (callers render an initials fallback). | Currently returns `null` (player photos) or falls through to the static `teamLogos.js` registry (team logos). |
-
-`roster.json` and `schedule.json` are **mock/dev-only** stand-ins (regenerable via `node scripts/build-roster.mjs`, which derives them from the existing 36 match files) for the roster + schedule collections the real API should serve.
-
----
-
-## 🧮 Scoring Engine & Formulas
-
-### 1. Official PUBG Mobile Match Point System
-Match standings on the leaderboard compute total points using official PUBG Mobile Esports rules:
-
-$$\text{Total Match Points} = \text{Placement Points} + \text{Kill Points}$$
-
-#### Kill Points
-$$\text{Kill Points} = 1 \text{ Point per Kill}$$
-
-#### Official Placement Points Lookup
-| Final Placement | Placement Points |
-|:---:|:---:|
-| **1st Place** 🥇 | **10 PTS** |
-| **2nd Place** 🥈 | **6 PTS** |
-| **3rd Place** 🥉 | **5 PTS** |
-| **4th Place** | **4 PTS** |
-| **5th Place** | **3 PTS** |
-| **6th Place** | **2 PTS** |
-| **7th & 8th Place** | **1 PT** |
-| **9th – 16th Place** | **0 PTS** |
-
----
-
-### 2. Player MVP Rate Formula
-For every match, each player's MVP rate contribution is calculated relative to total match statistics:
-
-$$\text{MVP Rate} = \left(\frac{\text{Damage}}{\text{Total Match Damage}} \times 0.3\right) + \left(\frac{\text{Survival Time}}{\text{Total Match Survival}} \times 0.2\right) + \left(\frac{\text{Eliminations}}{\text{Total Match Eliminations}} \times 0.4\right) + \left(\frac{\text{Knockdowns}}{\text{Total Match Knockdowns}} \times 0.1\right)$$
-
-*Fantasy squad scores equal the sum of all 4 selected players' total MVP rates across all matches.*
-
----
-
-### 3. Match Prediction Decay Scoring (Base 10 PTS Max)
-When users predict a match winner, points are awarded based on where their selected team actually finishes:
-
-| Pick Finish | Payout % | Points Awarded |
-|:---:|:---:|:---:|
-| **1st Place Finish** | **100%** | **10 PTS** |
-| **2nd Place Finish** | **80%** | **8 PTS** |
-| **3rd Place Finish** | **50%** | **5 PTS** |
-| **4th Place Finish** | **30%** | **3 PTS** |
-| **5th Place Finish** | **10%** | **1 PT** |
-| **6th – 16th Finish** | **0%** | **0 PTS** |
-
----
-
-## 🎨 Design System & UI Specs
-
-Modeled after Google Stitch **"Ignite Tournament Interface"**:
-
-- **Color Palette**:
-  - **Background**: `#0A0A0B` (Dark tactical background with 40px grid texture)
-  - **Primary Accent**: `#FF6B00` (Electric Orange)
-  - **HUD Surface**: `#1A1A1C` (Dark container cards with `#2E2E32` borders)
-  - **Status Live**: `#FF0000` (Animated pulse indicator)
-  - **Status Victory**: `#4CFF72`
-- **Typography Scale**:
-  - **Display / Titles**: `Archivo Narrow` (Bold, Uppercase, Tracking Tight)
-  - **Body / Labels**: `Geist` (Clean, Monospaced Statistics, Uppercase Letter Spacing)
-- **Shape Language**:
-  - 0px border radius (sharp, angular tactical edges).
-  - Inset glow borders (`shadow-[inset_0_0_10px_rgba(255,107,0,0.4)]`) for podium placements.
-  - Scanline CSS overlays for interactive HUD elements.
-
----
-
-## 📁 Project Directory Structure
-
-```
-PUBGM Fantasy and Predict/
-├── index.html                  # SPA HTML Shell with Tailwind, Fonts & Layout
-├── package.json                # Dependencies & Vite scripts
-├── vite.config.js              # Vite configuration (ignores watching data dir)
-├── README.md                   # Project documentation
-├── scripts/
-│   └── build-roster.mjs        # Regenerates roster.json/schedule.json from the match files
-├── public/
-│   └── data/                   # 36 PMGO match JSON files + roster.json + schedule.json
-└── src/
-    ├── main.js                 # Entry point: Router, auth sync & data boot
-    ├── router.js               # Hash SPA router
-    ├── state.js                # Auth, predictions & fantasy state manager
-    ├── ui.js                   # UI utilities, toasts, page loader & formatters
-    ├── css/
-    │   ├── design-system.css   # Custom CSS tokens & Stitch HUD animations
-    │   └── app.css             # Component CSS styles & data tables
-    ├── data/
-    │   ├── api.js              # Data source adapter — see Backend Integration Contract
-    │   ├── schedule.js         # Pure day/lock-status helpers for Predictions
-    │   ├── loader.js           # Telemetry parser, Power Score engine & aggregate builder
-    │   └── teamLogos.js        # Mapped team logos & badge generator
-    └── pages/
-        ├── login.js            # Authentication page (Login / Register tabs)
-        ├── dashboard.js        # Tournament Dashboard & Game Telemetry Leaderboard
-        ├── predictions.js      # Day-gated, deadline-locked Match Predictor interface
-        ├── fantasy.js          # Active Squad deployment & Draft Builder
-        ├── leaderboard.js      # Combined Fantasy & Predictor standings
-        ├── players.js          # Operative roster grid & detailed dossiers
-        └── teams.js            # Participant teams grid & per-team roster profile
-```
-
----
-
-## 🚀 Setup & Usage Guide
-
-### Prerequisites
-- [Node.js](https://nodejs.org/) (v18 or higher)
-- Web Browser (Chrome, Edge, Firefox, or Safari)
-
-### 1. Clone & Install
 ```bash
-cd "f:\Programing projects\PUBGM Fantasy and Predict"
-npm install
+DATABASE_URL="<unpooled URL>" npx prisma db push
+DATABASE_URL="<unpooled URL>" npm run seed
 ```
 
-### 2. Add Match Data
-Copy your 36 Shadow Tracker match JSON files into `public/data/`:
-```bash
-public/data/Finals D1 G1.json
-public/data/Finals D1 G2.json
-...
-```
+Use the **unpooled** connection string (host without `-pooler`) for schema
+pushes and seeding; keep the pooled one as the app's `DATABASE_URL`.
 
-### 3. Run Local Development Server
-```bash
-npm run dev
-```
-Open your browser at `http://localhost:5173/` (or the port displayed in your terminal).
+`prisma generate` runs in both `build` and `postinstall`, because Vercel
+restores a cached `node_modules` and can otherwise skip the install-time
+generate.
 
-### 4. Build for Production
-```bash
-npm run build
-```
-The output bundle will be generated in `dist/`.
+After the first deploy that introduces `DATABASE_URL`, redeploy with **"Use
+existing Build Cache" unticked** — a function built before the variable existed
+will 500 at runtime.
 
 ---
 
-*PMGO Tactical Platform — Tactical Protocol Spectator Engine.*
-#   F a n t a s y  
- 
+## Scripts
+
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Development server |
+| `npm run build` | `prisma generate && next build` |
+| `npm test` | Scoring unit tests |
+| `npm run seed` | Rebuild the tournament (destructive) |
+| `npm run db:push` | Sync the schema |
+| `npm run db:reset` | Force-reset the schema, then seed |
+| `npm run db:check-mongo` | Validate the schema under MongoDB |
+| `npm run assets` | Download team and player artwork |
+| `npm run check:overflow` | Horizontal-overflow sweep across routes and widths |
+| `npm run shot` | Screenshot a route at a given width |
+| `node scripts/build-roster.mjs` | Regenerate `roster.json` from the match files |
+
+The last three drive your installed Chrome through `puppeteer-core` (no browser
+download) and expect a server already running. Pass its origin as the first
+argument, e.g. `npm run check:overflow -- http://localhost:3000`.
+
+---
+
+## Notes
+
+PMGO Arena is an independent fantasy and prediction table. It is not affiliated
+with any tournament organizer or publisher.

@@ -1,0 +1,198 @@
+{
+  "source": "github.com/Capex11/PUBG-stats-website",
+  "teams": {
+    "721 ESPORTS": {
+      "slug": "721-esports",
+      "tag": "721",
+      "color": "#0f3ef9",
+      "logo": "/logos/721-esports-logo.webp",
+      "flag": "/flags/721-esports-flag.webp"
+    },
+    "7C ESPORTS": {
+      "slug": "7c-esports",
+      "tag": "7C",
+      "color": "#cc5424",
+      "logo": "/logos/7c-esports-logo.webp",
+      "flag": "/flags/7c-esports-flag.webp"
+    },
+    "ALULA Esports": {
+      "slug": "alula-esports",
+      "tag": "Ula",
+      "color": "#1386d2",
+      "logo": "/logos/alula-esports-logo.webp",
+      "flag": "/flags/alula-esports-flag.webp"
+    },
+    "CB9 Esports": {
+      "slug": "cb9-esports",
+      "tag": "CB9",
+      "color": "#e4243c",
+      "logo": "/logos/cb9-esports-logo.webp",
+      "flag": "/flags/cb9-esports-flag.webp"
+    },
+    "DAT ALREMAL": {
+      "slug": "dat-alremal",
+      "tag": "DAT",
+      "color": "#FF9900",
+      "logo": "/logos/dat-alremal-logo.webp",
+      "flag": "/flags/dat-alremal-flag.webp"
+    },
+    "ETSH ESPORTS": {
+      "slug": "etsh-esports",
+      "tag": "ETSH",
+      "color": "#00FF66",
+      "logo": "/logos/etsh-esports-logo.webp",
+      "flag": "/flags/etsh-esports-flag.webp"
+    },
+    "FOUR WIZ": {
+      "slug": "four-wiz",
+      "tag": "4W",
+      "color": "#9933FF",
+      "logo": "/logos/four-wiz-logo.webp",
+      "flag": "/flags/four-wiz-flag.webp"
+    },
+    "Geekay Esports": {
+      "slug": "geekay-esports",
+      "tag": "GEEK",
+      "color": "#3960ac",
+      "logo": "/logos/geekay-esports-logo.webp",
+      "flag": "/flags/geekay-esports-flag.webp"
+    },
+    "KHK Esports": {
+      "slug": "khk-esports",
+      "tag": "KHK",
+      "color": "#bb4d4d",
+      "logo": "/logos/khk-esports-logo.webp",
+      "flag": "/flags/khk-esports-flag.webp"
+    },
+    "MASTER TEAM": {
+      "slug": "master-team",
+      "tag": "MSTR",
+      "color": "#d26013",
+      "logo": "/logos/master-team-logo.webp",
+      "flag": "/flags/master-team-flag.webp"
+    },
+    "Nigma Galaxy": {
+      "slug": "nigma-galaxy",
+      "tag": "NGX",
+      "color": "#642bba",
+      "logo": "/logos/nigma-galaxy-logo.webp",
+      "flag": "/flags/nigma-galaxy-flag.webp"
+    },
+    "R8 ESPORTS": {
+      "slug": "r8-esports",
+      "tag": "R8",
+      "color": "#3eb4fa",
+      "logo": "/logos/r8-esports-logo.webp",
+      "flag": "/flags/r8-esports-flag.webp"
+    },
+    "RA'AD": {
+      "slug": "ra-ad",
+      "tag": "RAAD",
+      "color": "#2626bf",
+      "logo": "/logos/ra-ad-logo.webp",
+      "flag": "/flags/ra-ad-flag.webp"
+    },
+    "THE HUNTERS": {
+      "slug": "the-hunters",
+      "tag": "HUNT",
+      "color": "#d21313",
+      "logo": "/logos/the-hunters-logo.webp",
+      "flag": "/flags/the-hunters-flag.webp"
+    },
+    "Team Vision": {
+      "slug": "team-vision",
+      "tag": "VSN",
+      "color": "#f90f0f",
+      "logo": "/logos/team-vision-logo.webp",
+      "flag": "/flags/team-vision-flag.webp"
+    },
+    "iKURD ESPORTS": {
+      "slug": "ikurd-esports",
+      "tag": "iKURD",
+      "color": "#840ff9",
+      "logo": "/logos/ikurd-esports-logo.webp",
+      "flag": "/flags/ikurd-esports-flag.webp"
+    }
+  },
+  "players": {
+    "4wClever": "/players/4wclever-photo.webp",
+    "4wM1D0": "/players/4wm1d0-photo.webp",
+    "4wM1RACLE": "/players/4wm1racle-photo.webp",
+    "4wSALAM96": "/players/4wsalam96-photo.webp",
+    "4wTOMEū": "/players/4wtomeu-photo.webp",
+    "721ALEKOOOOOOO": "/players/721alekooooooo-photo.webp",
+    "721MALLLLLLLIK": "/players/721malllllllik-photo.webp",
+    "721MASKOOOtxc": "/players/721maskoootxc-photo.webp",
+    "721REHANNNNNNN": "/players/721rehannnnnnn-photo.webp",
+    "7cAssaf": "/players/7cassaf-photo.webp",
+    "7cEmmad": "/players/7cemmad-photo.webp",
+    "7cLAITH": "/players/7claith-photo.webp",
+    "7cPowerFul": "/players/7cpowerful-photo.webp",
+    "CB9AMJED": "/players/cb9amjed-photo.webp",
+    "CB9DEXTER": "/players/cb9dexter-photo.webp",
+    "CB9GHARYANi": "/players/cb9gharyani-photo.webp",
+    "CB9KILUAA": "/players/cb9kiluaa-photo.webp",
+    "CB9MOSTA": "/players/cb9mosta-photo.webp",
+    "DATŪANASS": "/players/datuanass-photo.webp",
+    "DATŪCAREZMAA": "/players/datucarezmaa-photo.webp",
+    "DATŪKLUZZ": "/players/datukluzz-photo.webp",
+    "DATŪLORD": "/players/datulord-photo.webp",
+    "DATŪMAFIA": "/players/datumafia-photo.webp",
+    "DATŪROMAAA": "/players/daturomaaa-photo.webp",
+    "ETSHīNASSER74": "/players/etshinasser74-photo.webp",
+    "ETSHŲAPKRINO": "/players/etshuapkrino-photo.webp",
+    "ETSHŲFAHiTA": "/players/etshufahita-photo.webp",
+    "ETSHŲSPEED32": "/players/etshuspeed32-photo.webp",
+    "ETSHŲX": "/players/etshux-photo.webp",
+    "GeekEZ4BADBOY": "/players/geekez4badboy-photo.webp",
+    "GeekKEVIN88": "/players/geekkevin88-photo.webp",
+    "GeekRAGNARoK26": "/players/geekragnarok26-photo.webp",
+    "GeekSAFG": "/players/geeksafg-photo.webp",
+    "KHKAMOOR": "/players/khkamoor-photo.webp",
+    "KhkCASANOVA77K": "/players/khkcasanova77k-photo.webp",
+    "R8AMOORI": "/players/r8amoori-photo.webp",
+    "R8B5ET": "/players/r8b5et-photo.webp",
+    "R8Marth": "/players/r8marth-photo.webp",
+    "R8PRESTLGE": "/players/r8prestlge-photo.webp",
+    "R8SKTON": "/players/r8skton-photo.webp",
+    "RAADFEVOO": "/players/raadfevoo-photo.webp",
+    "RAADNOSSA99": "/players/raadnossa99-photo.webp",
+    "RAADRINOOOO": "/players/raadrinoooo-photo.webp",
+    "RAADZUXXY隋": "/players/raadzuxxy-photo.webp",
+    "RAADōLabubu": null,
+    "UlaKhatab": "/players/ulakhatab-photo.webp",
+    "UlaKŁAWS": "/players/ulak-aws-photo.webp",
+    "UlaQuick": "/players/ulaquick-photo.webp",
+    "UlaR3B": "/players/ular3b-photo.webp",
+    "UlaY4SR": "/players/ulay4sr-photo.webp",
+    "VSNxAGA1NN": "/players/vsnxaga1nn-photo.webp",
+    "VSNxENJOY": "/players/vsnxenjoy-photo.webp",
+    "VSNxMarcelo511": "/players/vsnxmarcelo511-photo.webp",
+    "VSNxNawaF": "/players/vsnxnawaf-photo.webp",
+    "VSNxNvrAlone": "/players/vsnxnvralone-photo.webp",
+    "huntATAL": "/players/huntatal-photo.webp",
+    "huntBROLY444": "/players/huntbroly444-photo.webp",
+    "huntCAZORLAA": "/players/huntcazorlaa-photo.webp",
+    "huntROZESS": "/players/huntrozess-photo.webp",
+    "huntSOSAVn1": "/players/huntsosavn1-photo.webp",
+    "iKURDxASADD": "/players/ikurdxasadd-photo.webp",
+    "iKURDxGØRAN": "/players/ikurdxg-ran-photo.webp",
+    "iKURDxHIWAklar": "/players/ikurdxhiwaklar-photo.webp",
+    "iKURDxMAN98": "/players/ikurdxman98-photo.webp",
+    "iKURDxNARUTOo": "/players/ikurdxnarutoo-photo.webp",
+    "khk1RFAN": "/players/khk1rfan-photo.webp",
+    "khkNW٭": "/players/khknw-photo.webp",
+    "khkWALOODī": "/players/khkwaloodi-photo.webp",
+    "mstrBOSSē": "/players/mstrbosse-photo.webp",
+    "mstrEYAD": "/players/mstreyad-photo.webp",
+    "mstrKARA": "/players/mstrkara-photo.webp",
+    "mstrMORSHē": null,
+    "mstrSAROUT": "/players/mstrsarout-photo.webp",
+    "mstrSONIC¹iQ": "/players/mstrsonic1iq-photo.webp",
+    "ngx4YDO": "/players/ngx4ydo-photo.webp",
+    "ngxKOOPS02": "/players/ngxkoops02-photo.webp",
+    "ngxLORDū": "/players/ngxlordu-photo.webp",
+    "ngxRAOUF": "/players/ngxraouf-photo.webp",
+    "ngxSaTaN33ň": "/players/ngxsatan33n-photo.webp"
+  }
+}

@@ -1,0 +1,228 @@
+// PMGO Arena — tournament telemetry, schedule, users, predictions and squads.
+//
+// PORTABILITY: this schema validates under `postgresql`, `sqlite` and
+// `mongodb`. To move, change `provider` below and point DATABASE_URL at the new
+// database — no model changes required. `npm run db:check-mongo` keeps that
+// honest.
+//
+// Two rules make it work, so don't undo them:
+//   1. Every @id carries @map("_id") — MongoDB requires it, the others ignore it.
+//   2. IDs are cuid() strings, never autoincrement() (unsupported on MongoDB)
+//      and never @db.ObjectId (which SQLite cannot express).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------- tournament
+
+model Team {
+  // teamId exactly as it appears in Shadow Tracker telemetry (5–20, stable
+  // across all 36 match files) — a real business key, so it stays an Int
+  // rather than becoming a generated id.
+  id       Int    @id @map("_id")
+  name     String @unique
+  slug     String @unique
+  color    String
+  initials String
+  // Local asset paths. Were googleusercontent URLs with no uptime guarantee.
+  logo     String?
+  flag     String?
+
+  players Player[]
+  results TeamResult[]
+  picks   Prediction[]
+}
+
+model Player {
+  // Shadow Tracker uId, stable across matches.
+  uid    String @id @map("_id")
+  name   String
+  openId String @default("")
+
+  // Nullable on purpose: roster.json carries no role/slot, and teams rotate
+  // substitutes (79 distinct players across a 64-slot field). Any code that
+  // needs a role label derives one positionally rather than reading this.
+  role String?
+  slot Int?
+
+  // Cutout headshot under /players. Null for the two operatives whose names
+  // carry macrons the source exporter could not resolve — they fall back to
+  // an initials badge.
+  photo String?
+
+  teamId Int
+  team   Team @relation(fields: [teamId], references: [id])
+
+  stats      PlayerStat[]
+  squadPicks SquadPick[]
+
+  @@index([teamId])
+}
+
+model Match {
+  id String @id @default(cuid()) @map("_id")
+
+  // "League_D1_G1" — URL-safe, and the id the app has always used in routes.
+  key   String @unique
+  phase String // League | Finals
+  day   Int
+  game  Int
+
+  // 0–35, true tournament order: League D1 G1 → Finals D3 G6. Every read that
+  // needs chronology orders by this. Sorting by phase name puts "Finals"
+  // before "League" and silently reverses a player's match history.
+  order Int @unique
+
+  // False until this game's telemetry is ingested. An unplayed match is a
+  // legitimate state — it still appears in the schedule and predictions.
+  hasResults Boolean @default(false)
+
+  scheduleDayId String
+  scheduleDay   ScheduleDay @relation(fields: [scheduleDayId], references: [id], onDelete: Cascade)
+
+  stats       PlayerStat[]
+  results     TeamResult[]
+  predictions Prediction[]
+
+  @@index([scheduleDayId])
+}
+
+// One tournament day, and the window in which its picks are open. Lives in the
+// database rather than a generated JSON file so deadlines can be edited without
+// a rebuild — and so the server, not the client, decides what is locked.
+model ScheduleDay {
+  id    String @id @default(cuid()) @map("_id")
+  phase String
+  day   Int
+  label String
+
+  opensAt DateTime
+  locksAt DateTime
+
+  matches Match[]
+
+  @@unique([phase, day])
+}
+
+model PlayerStat {
+  id String @id @default(cuid()) @map("_id")
+
+  matchId   String
+  match     Match  @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  playerUid String
+  player    Player @relation(fields: [playerUid], references: [uid], onDelete: Cascade)
+
+  rank            Int // the player's team's finish, 1–16
+  killNum         Int
+  damage          Int
+  heal            Int
+  survivalTime    Int // seconds
+  knockouts       Int
+  assists         Int
+  headShotNum     Int
+  maxKillDistance Int
+  driveDistance   Int
+  marchDistance   Int
+
+  // Power Score for this match, precomputed at seed time so no request
+  // recomputes it. See matchPower() in lib/scoring.ts.
+  power Float
+
+  @@unique([matchId, playerUid])
+  @@index([playerUid])
+}
+
+// Denormalised team standings per match — the dashboard's hottest read, served
+// as one indexed query instead of an aggregation over PlayerStat.
+model TeamResult {
+  id String @id @default(cuid()) @map("_id")
+
+  matchId String
+  match   Match  @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  teamId  Int
+  team    Team   @relation(fields: [teamId], references: [id])
+
+  rank            Int
+  kills           Int
+  damage          Int
+  placementPoints Int
+  totalPoints     Int
+
+  @@unique([matchId, teamId])
+  @@index([matchId, rank])
+}
+
+// --------------------------------------------------------------------- users
+
+model User {
+  id String @id @default(cuid()) @map("_id")
+
+  // Callsign — what the navbar and both leaderboards display.
+  name String
+  // Login key, stored lowercased so addresses aren't case-sensitive.
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+
+  sessions    Session[]
+  predictions Prediction[]
+  squad       Squad?
+}
+
+// Opaque server-side sessions: revocation is a DELETE, and there is no signing
+// key to rotate or leak.
+model Session {
+  id        String   @id @default(cuid()) @map("_id")
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+
+  @@index([userId])
+}
+
+model Prediction {
+  id String @id @default(cuid()) @map("_id")
+
+  userId  String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  matchId String
+  match   Match  @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  teamId  Int
+  team    Team   @relation(fields: [teamId], references: [id])
+
+  pointsAwarded Int      @default(0)
+  createdAt     DateTime @default(now())
+
+  // One locked pick per match, enforced by the database rather than a handler.
+  @@unique([userId, matchId])
+  @@index([userId])
+}
+
+model Squad {
+  id       String   @id @default(cuid()) @map("_id")
+  userId   String   @unique
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name     String
+  lockedAt DateTime @default(now())
+
+  picks SquadPick[]
+}
+
+model SquadPick {
+  id String @id @default(cuid()) @map("_id")
+
+  squadId   String
+  squad     Squad  @relation(fields: [squadId], references: [id], onDelete: Cascade)
+  playerUid String
+  player    Player @relation(fields: [playerUid], references: [uid])
+  slot      Int // 1–4
+
+  @@unique([squadId, slot])
+  @@unique([squadId, playerUid])
+}

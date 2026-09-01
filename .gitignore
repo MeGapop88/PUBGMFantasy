@@ -22,3 +22,18 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Next.js
+.next
+.next-verify
+out
+next-env.d.ts
+tsconfig.tsbuildinfo
+
+# Env / deploy
+.env
+.env*.local
+.vercel
+
+# throwaway verification scripts
+tmp-verify
